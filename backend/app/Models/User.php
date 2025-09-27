@@ -1,48 +1,53 @@
 <?php
-
+// app/Models/User.php
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    // Disable automatic timestamps karena tidak ada updated_at
+    public $timestamps = false;
+
+    // Atau kalau mau pakai created_at saja:
+    // const UPDATED_AT = null;
+
     protected $fillable = [
-        'name',
-        'email',
+        'username',
         'password',
+        'name',
+        'last_login',
+        'last_change',
+        'is_active',
+        'role_id',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
-        'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $casts = [
+        'password' => 'hashed',
+        'last_login' => 'datetime',
+        'last_change' => 'datetime',
+        'is_active' => 'boolean',
+        'created_at' => 'datetime',
+    ];
+
+    // Scope untuk user aktif
+    public function scopeActive($query)
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $query->where('is_active', 1);
+    }
+
+    // Scope untuk superadmin
+    public function scopeSuperAdmin($query)
+    {
+        return $query->where('role_id', 1);
     }
 }
