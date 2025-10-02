@@ -11,6 +11,7 @@
       <input v-model="form.longitude" type="number" placeholder="Longitude" class="w-full border p-2 rounded" />
       <input v-model="form.phone" placeholder="Phone" class="w-full border p-2 rounded" />
       <input v-model="form.email" type="email" placeholder="Email" class="w-full border p-2 rounded" />
+      <input v-model="form.group_id" placeholder="yayasan" class="w-full border p-2 rounded" />
       <input v-model="form.website" placeholder="Website" class="w-full border p-2 rounded" />
       <input v-model="form.logo" placeholder="Logo URL" class="w-full border p-2 rounded" />
       <input v-model="form.founded" type="date" placeholder="Founded" class="w-full border p-2 rounded" />
@@ -40,6 +41,7 @@ const form = reactive({
   longitude: null,
   phone: '',
   email: '',
+  group_id:'',
   website: '',
   logo: '',
   founded: '',
