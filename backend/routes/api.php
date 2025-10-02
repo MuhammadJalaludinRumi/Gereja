@@ -4,14 +4,17 @@ use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GroupController;
-    // Route login dan logout + Auth
+use App\Http\Controllers\OrganizationController;
+
+// ----------------- AUTH -----------------
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout']);
+
 Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
     try {
         return response()->json([
             'user' => $request->user(),
-            'auth_check' => Auth::check()
+            'auth_check' => \Illuminate\Support\Facades\Auth::check()
         ]);
     } catch (\Exception $e) {
         return response()->json([
@@ -20,9 +23,10 @@ Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
             'file' => $e->getFile()
         ], 500);
     }
-
-    Route::post('/logout', [AuthController::class, 'logout']);
 });
 
-    //Route groups
+// ----------------- GROUPS -----------------
 Route::apiResource('groups', GroupController::class);
+
+// ----------------- ORGANIZATION -----------------
+Route::apiResource('organizations', OrganizationController::class);
