@@ -24,14 +24,12 @@ class OrganizationController extends Controller
             'longitude'    => 'nullable|numeric',
             'phone'        => 'nullable|string|max:50',
             'email'        => 'nullable|email|max:255',
+            'group_id'     => 'nullable|int',
             'website'      => 'nullable|string|max:255',
             'logo'         => 'nullable|string|max:255',
             'founded'      => 'nullable|date',
             'legal'        => 'nullable|string|max:100',
         ]);
-
-        // ID otomatis UUID
-        $validated['id'] = (string) Str::uuid();
 
         $org = Organization::create($validated);
         return response()->json($org, 201);

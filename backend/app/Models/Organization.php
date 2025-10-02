@@ -9,7 +9,7 @@ class Organization extends Model
 {
     use HasFactory;
 
-    protected $table = 'organization'; 
+    protected $table = 'organization';
 
     protected $fillable = [
         'id',
@@ -21,13 +21,12 @@ class Organization extends Model
         'longitude',
         'phone',
         'email',
+        'group_id',
         'website',
         'logo',
         'founded',
         'legal',
     ];
 
-    // Supaya primary key bukan auto increment
-    public $incrementing = false;
-    protected $keyType = 'string';
+    public $timestamps = false;
 }
