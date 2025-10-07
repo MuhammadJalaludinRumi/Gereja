@@ -35,6 +35,27 @@ const links = [[{
     open.value = false
   }
 }, {
+  label: 'User Management',
+  icon: 'i-lucide-users',
+  to: '/users',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
+  label: 'Role management',
+  icon: 'i-lucide-users',
+  to: '/roles',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
+  label: 'Organization License',
+  icon: 'i-lucide-users',
+  to: '/organizationLicense',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
   label: 'Provinces',
   icon: 'i-lucide-users',
   to: '/province',

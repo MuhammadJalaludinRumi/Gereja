@@ -9,6 +9,8 @@ onMounted(async () => {
   groups.value = data.value || []
 })
 
+const config = useRuntimeConfig()
+
 const formatDate = (value: string | null) => {
   if (!value) return ''
   return value.split('T')[0]
@@ -46,7 +48,10 @@ const remove = async (id: number) => {
           <td class="p-2">{{ g.phone }}</td>
           <td class="p-2">{{ g.email }}</td>
           <td class="p-2">{{ g.website }}</td>
-          <td class="p-2">{{ g.logo }}</td>
+          <td class="p-2">
+            <img v-if="g.logo" :src="g.logo" alt="logo" class="w-12 h-12 object-cover rounded" />
+            <span v-else class="text-gray-400">No logo</span>
+          </td>
           <td class="p-2">{{ formatDate(g.founded) }}</td>
           <td class="p-2">
             <NuxtLink :to="`/groups/${g.id}`" class="text-blue-500">Edit</NuxtLink>

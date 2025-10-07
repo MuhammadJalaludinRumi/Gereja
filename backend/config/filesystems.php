@@ -49,9 +49,9 @@ return [
 
         's3' => [
             'driver' => 's3',
-            'key' => env('arn:aws:s3:::gkpawiligar'),
-            'secret' => env('AWS_SECRET_ACCESS_KEY'),
-            'region' => env('indonesia'),
+            'key' => env('aAKIATZHMXTDW3R77UZNO'),
+            'secret' => env('UAasm1NIUNHniNOlsowSDzQBJ7RsqkOllffq3KRj'),
+            'region' => env('ap-southeast-3'),
             'bucket' => env('gkpawiligar'),
             'url' => env('AWS_URL'),
             'endpoint' => env('AWS_ENDPOINT'),
@@ -59,7 +59,6 @@ return [
             'throw' => false,
             'report' => false,
         ],
-
     ],
 
     /*

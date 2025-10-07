@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { useGroups } from '~/composables/useGroups'
+import { reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const { createGroup } = useGroups()
-
-// state form
+const router = useRouter()
 const form = reactive({
   name: '',
   address: '',
@@ -11,19 +12,21 @@ const form = reactive({
   phone: '',
   email: '',
   website: '',
-  logo: '',
   founded: '',
   legal: '',
 })
-
-const router = useRouter()
+const logoFile = ref<File | null>(null)
 
 const submit = async () => {
-  const { error } = await createGroup(form)
+  const fd = new FormData()
+  Object.entries(form).forEach(([key, val]) => fd.append(key, val || ''))
+  if (logoFile.value) fd.append('logo', logoFile.value)
+
+  const { error } = await createGroup(fd)
   if (!error.value) {
     router.push('/groups')
   } else {
-    alert('Gagal menyimpan data')
+    alert('Gagal nyimpen bro 😭')
   }
 }
 </script>
@@ -39,7 +42,7 @@ const submit = async () => {
       <input v-model="form.phone" placeholder="Phone" class="border p-2 rounded" />
       <input v-model="form.email" type="email" placeholder="Email" class="border p-2 rounded" />
       <input v-model="form.website" placeholder="Website" class="border p-2 rounded" />
-      <input v-model="form.logo" placeholder="Logo (URL/Path)" class="border p-2 rounded" />
+      <input type="file" accept="image/*" @change="e => logoFile.value = e.target.files?.[0] || null" class="border p-2 rounded" />
       <input v-model="form.founded" type="date" class="border p-2 rounded" />
       <input v-model="form.legal" placeholder="Legal" class="border p-2 rounded" />
 
