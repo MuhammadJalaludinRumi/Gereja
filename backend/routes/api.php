@@ -7,7 +7,10 @@ use App\Http\Controllers\GroupController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\CityController;
-
+use App\Http\Controllers\LicenseController;
+use App\Http\Controllers\RuleController;
+use App\Http\Controllers\UserAuthorityController;
+use App\Http\Controllers\AclController;
 
 // Auth
 Route::post('/login', [AuthController::class, 'login'])->name('login');
@@ -39,3 +42,15 @@ Route::apiResource('province', ProvinceController::class);
 
 // City
 Route::apiResource('city', CityController::class);
+
+// Licenses
+Route::apiResource('licenses', LicenseController::class);
+
+// Rules
+Route::apiResource('rules', RuleController::class);
+
+// User-Authorty
+Route::apiResource('user-authorities', UserAuthorityController::class);
+
+// Acls
+Route::apiResource('acls', AclController::class);
