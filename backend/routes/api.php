@@ -12,7 +12,10 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\CityController;
-
+use App\Http\Controllers\LicenseController;
+use App\Http\Controllers\RuleController;
+use App\Http\Controllers\UserAuthorityController;
+use App\Http\Controllers\AclController;
 
 //Route Auth
 Route::post('/login', [AuthController::class, 'login'])->name('login');
@@ -59,3 +62,14 @@ Route::apiResource('invoices', InvoiceController::class);
 //Route News
 Route::apiResource('news', NewsController::class);
 
+// Licenses
+Route::apiResource('licenses', LicenseController::class);
+
+// Rules
+Route::apiResource('rules', RuleController::class);
+
+// User-Authorty
+Route::apiResource('user-authorities', UserAuthorityController::class);
+
+// Acls
+Route::apiResource('acls', AclController::class);

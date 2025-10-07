@@ -49,7 +49,7 @@ class OrganizationController extends Controller
             'name'         => 'required|string|max:255',
             'abbreviation' => 'nullable|string|max:50',
             'address'      => 'nullable|string|max:255',
-            'city'         => 'nullable|string|max:100',
+            'city'         => 'nullable|integer',
             'latitude'     => 'nullable|numeric',
             'longitude'    => 'nullable|numeric',
             'phone'        => 'nullable|string|max:50',
