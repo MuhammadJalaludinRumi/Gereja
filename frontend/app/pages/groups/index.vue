@@ -44,7 +44,7 @@ const remove = async (id: number) => {
         <tr v-for="g in groups" :key="g.id" class="border-t">
           <td class="p-2">{{ g.name }}</td>
           <td class="p-2">{{ g.address }}</td>
-          <td class="p-2">{{ g.city }}</td>
+          <td class="p-2">{{ g.city?.name }}</td>
           <td class="p-2">{{ g.phone }}</td>
           <td class="p-2">{{ g.email }}</td>
           <td class="p-2">{{ g.website }}</td>

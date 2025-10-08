@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useGroups } from '~/composables/useGroups'
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const { createGroup } = useGroups()
@@ -15,6 +15,14 @@ const form = reactive({
   founded: '',
   legal: '',
 })
+
+const cities = ref([])
+
+onMounted(async () => {
+  const data = await $fetch('http://localhost:8000/api/city')
+  cities.value = data || []
+})
+
 const logoFile = ref<File | null>(null)
 
 const onFileChange = (e: Event) => {
@@ -22,19 +30,20 @@ const onFileChange = (e: Event) => {
   logoFile.value = file
 }
 
-
 const submit = async () => {
   const fd = new FormData()
   Object.entries(form).forEach(([key, val]) => fd.append(key, val || ''))
 
   if (logoFile.value) fd.append('logo', logoFile.value)
 
-  const { error } = await createGroup(fd)
-  if (!error.value) {
+  const { data, error } = await createGroup(fd)
+
+  if (data.value) {
     router.push('/groups')
   } else {
     alert('Gagal nyimpen bro 😭')
   }
+
 }
 </script>
 
@@ -45,7 +54,12 @@ const submit = async () => {
     <form @submit.prevent="submit" class="grid gap-4">
       <input v-model="form.name" placeholder="Name" class="border p-2 rounded" required />
       <input v-model="form.address" placeholder="Address" class="border p-2 rounded" />
-      <input v-model="form.city" placeholder="City" class="border p-2 rounded" />
+      <select v-model="form.city" class="border p-2 rounded w-full">
+        <option disabled value="">-- Pilih Kota --</option>
+        <option v-for="city in cities" :key="city.id" :value="city.id">
+          {{ city.name }}
+        </option>
+      </select>
       <input v-model="form.phone" placeholder="Phone" class="border p-2 rounded" />
       <input v-model="form.email" type="email" placeholder="Email" class="border p-2 rounded" />
       <input v-model="form.website" placeholder="Website" class="border p-2 rounded" />

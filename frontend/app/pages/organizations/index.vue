@@ -5,13 +5,8 @@
       <h1 class="text-2xl font-bold" style="color: var(--ui-text-highlighted);">
         Daftar Organization
       </h1>
-      <UButton
-        to="/organizations/create"
-        icon="i-heroicons-plus-circle"
-        size="md"
-        color="primary"
-        label="Tambah Organization"
-      />
+      <UButton to="/organizations/create" icon="i-heroicons-plus-circle" size="md" color="primary"
+        label="Tambah Organization" />
     </div>
 
     <!-- Table Card -->
@@ -20,85 +15,51 @@
         <table class="min-w-full table-auto border-collapse" style="color: var(--ui-text);">
           <thead style="background: var(--ui-bg-muted); border-bottom: 1px solid var(--ui-border);">
             <tr>
-              <th
-                v-for="head in tableHeaders"
-                :key="head"
+              <th v-for="head in tableHeaders" :key="head"
                 class="px-3 py-3 text-left text-xs font-semibold uppercase whitespace-nowrap"
-                style="color: var(--ui-text-highlighted);"
-              >
+                style="color: var(--ui-text-highlighted);">
                 {{ head }}
               </th>
-              <th
-                class="px-3 py-3 text-center text-xs font-semibold uppercase whitespace-nowrap"
-                style="color: var(--ui-text-highlighted);"
-              >
+              <th class="px-3 py-3 text-center text-xs font-semibold uppercase whitespace-nowrap"
+                style="color: var(--ui-text-highlighted);">
                 Action
               </th>
             </tr>
           </thead>
 
           <tbody style="background: var(--ui-bg);">
-            <tr
-              v-for="org in organizations"
-              :key="org.id"
-              class="transition-colors"
-              :style="{
-                borderBottom: '1px solid var(--ui-border)',
-                background: 'var(--ui-bg)',
-              }"
-              @mouseover="hover = org.id"
-              @mouseleave="hover = null"
-              :class="{ 'hovered-row': hover === org.id }"
-            >
+            <tr v-for="org in organizations" :key="org.id" class="transition-colors" :style="{
+              borderBottom: '1px solid var(--ui-border)',
+              background: 'var(--ui-bg)',
+            }" @mouseover="hover = org.id" @mouseleave="hover = null" :class="{ 'hovered-row': hover === org.id }">
               <td class="px-3 py-3 text-sm font-medium whitespace-nowrap" style="color: var(--ui-text-highlighted);">
                 {{ org.name }}
               </td>
               <td class="px-3 py-3 text-sm whitespace-nowrap">{{ org.abbreviation }}</td>
               <td class="px-3 py-3 text-sm max-w-[200px] truncate">{{ org.address }}</td>
-              <td class="px-3 py-3 text-sm">{{ org.city }}</td>
+              <td class="px-3 py-3 text-sm">{{ org.city?.name }}</td>
               <td class="px-3 py-3 text-sm">{{ org.latitude }}</td>
               <td class="px-3 py-3 text-sm">{{ org.longitude }}</td>
               <td class="px-3 py-3 text-sm">{{ org.phone }}</td>
               <td class="px-3 py-3 text-sm">{{ org.email }}</td>
               <td class="px-3 py-3 text-sm whitespace-nowrap">
-                <a
-                  v-if="org.website"
-                  :href="org.website"
-                  target="_blank"
-                  style="color: var(--ui-primary); text-decoration: underline;"
-                >
+                <a v-if="org.website" :href="org.website" target="_blank"
+                  style="color: var(--ui-primary); text-decoration: underline;">
                   {{ org.website }}
                 </a>
               </td>
               <td class="px-3 py-3 text-sm whitespace-nowrap">
-                <img
-                  v-if="org.logo"
-                  :src="org.logo"
-                  alt="Logo"
-                  class="h-10 w-auto rounded border"
-                  style="border-color: var(--ui-border);"
-                />
+                <img v-if="org.logo" :src="org.logo" alt="Logo" class="h-10 w-auto rounded border"
+                  style="border-color: var(--ui-border);" />
               </td>
               <td class="px-3 py-3 text-sm whitespace-nowrap">{{ formatDate(org.founded) }}</td>
               <td class="px-3 py-3 text-sm whitespace-nowrap">{{ org.legal }}</td>
               <td class="px-3 py-3 text-sm whitespace-nowrap">
                 <div class="flex justify-center gap-2">
-                  <UButton
-                    :to="`/organizations/${org.id}`"
-                    icon="i-heroicons-pencil-square"
-                    size="xs"
-                    color="blue"
-                    variant="soft"
-                    label="Edit"
-                  />
-                  <UButton
-                    @click.stop="openDeleteModal(org.id)"
-                    icon="i-heroicons-trash"
-                    size="xs"
-                    color="red"
-                    variant="soft"
-                    label="Delete"
-                  />
+                  <UButton :to="`/organizations/${org.id}`" icon="i-heroicons-pencil-square" size="xs" color="blue"
+                    variant="soft" label="Edit" />
+                  <UButton @click.stop="openDeleteModal(org.id)" icon="i-heroicons-trash" size="xs" color="red"
+                    variant="soft" label="Delete" />
                 </div>
               </td>
             </tr>
@@ -109,14 +70,17 @@
 
     <!-- Delete Modal -->
     <Teleport to="body">
-      <div v-if="isDeleteModalOpen" class="fixed inset-0 z-[99999] flex items-center justify-center" style="background: rgba(0,0,0,0.5);">
-        <UCard class="max-w-md w-full mx-4" style="background: var(--ui-bg); color: var(--ui-text); border: 1px solid var(--ui-border);">
+      <div v-if="isDeleteModalOpen" class="fixed inset-0 z-[99999] flex items-center justify-center"
+        style="background: rgba(0,0,0,0.5);">
+        <UCard class="max-w-md w-full mx-4"
+          style="background: var(--ui-bg); color: var(--ui-text); border: 1px solid var(--ui-border);">
           <template #header>
             <div class="flex items-center justify-between">
               <h3 class="text-lg font-semibold" style="color: var(--ui-text-highlighted);">
                 Konfirmasi Hapus
               </h3>
-              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" @click="isDeleteModalOpen = false" />
+              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid"
+                @click="isDeleteModalOpen = false" />
             </div>
           </template>
 
@@ -170,10 +134,11 @@ const confirmDelete = async () => {
   await fetchData()
 }
 
-const formatDate = (value: string | null) => {
-  if (!value) return ''
-  return value.split('T')[0]
+const formatDate = (date: string) => {
+  if (!date) return '-'
+  return date.split(' ')[0] // ambil bagian sebelum spasi
 }
+
 </script>
 
 <style scoped>

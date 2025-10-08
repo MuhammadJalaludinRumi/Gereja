@@ -1,25 +1,34 @@
-<script setup>
-import { ref, onMounted } from 'vue'
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
 
-const provinces = ref([])
+const api = 'http://localhost:8000/api/province'
+
+// State
+const provinces = ref<any[]>([])
 const name = ref('')
-const api = 'http://localhost:8000/api/province' // sesuaikan URL backend
+const search = ref('')
 
-// State untuk modal update
+// Modal edit
 const showEditModal = ref(false)
 const editProvince = ref({ id: null, name: '' })
 
-// State untuk modal delete
+// Modal delete
 const showDeleteModal = ref(false)
 const deleteTarget = ref({ id: null, name: '' })
 
-// Ambil data
+// Fetch data
 const fetchProvinces = async () => {
-  const res = await $fetch(api)
-  provinces.value = res
+  provinces.value = await $fetch(api)
 }
 
-// Tambah data
+// Filter untuk live search
+const filteredProvinces = computed(() => {
+  if (!search.value) return provinces.value
+  const keyword = search.value.toLowerCase()
+  return provinces.value.filter(p => p.name.toLowerCase().includes(keyword))
+})
+
+// Tambah province
 const addProvince = async () => {
   if (!name.value) return
   await $fetch(api, {
@@ -31,7 +40,7 @@ const addProvince = async () => {
 }
 
 // Buka modal edit
-const openEditModal = (province) => {
+const openEditModal = (province: any) => {
   editProvince.value = { ...province }
   showEditModal.value = true
 }
@@ -47,7 +56,7 @@ const saveUpdate = async () => {
 }
 
 // Buka modal delete
-const openDeleteModal = (province) => {
+const openDeleteModal = (province: any) => {
   deleteTarget.value = { ...province }
   showDeleteModal.value = true
 }
@@ -63,46 +72,112 @@ onMounted(fetchProvinces)
 </script>
 
 <template>
-  <div class="p-6">
-    <h1 class="text-2xl font-bold mb-4">Provinces</h1>
+  <div class="p-6 w-full overflow-hidden" style="background: var(--ui-bg); color: var(--ui-text);">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold" style="color: var(--ui-text-highlighted);">
+        CRUD Province
+      </h1>
+    </div>
 
     <!-- Form Tambah -->
-    <div class="mb-4 flex">
-      <input v-model="name" placeholder="Nama Province" class="border px-2 py-1 rounded w-64" />
-      <button @click="addProvince" class="bg-blue-500 text-white px-3 py-1 ml-2 rounded">Tambah</button>
-    </div>
+    <UCard class="mb-6" :ui="{ body: { padding: 'p-4' } }">
+      <div class="flex flex-col md:flex-row gap-3 items-center">
+        <input
+          v-model="search"
+          placeholder="Cari province..."
+          class="flex-1 rounded-lg border px-3 py-2 text-sm"
+          style="background: var(--ui-bg); border-color: var(--ui-border); color: var(--ui-text);"
+        />
 
-    <!-- List Province -->
-    <ul>
-      <li v-for="province in provinces" :key="province.id" class="mb-2 flex items-center">
-        <span class="flex-1">{{ province.name }}</span>
-        <button @click="openEditModal(province)" class="bg-green-500 text-white px-3 py-1 ml-2 rounded">Edit</button>
-        <button @click="openDeleteModal(province)" class="bg-red-500 text-white px-3 py-1 ml-2 rounded">Hapus</button>
-      </li>
-    </ul>
+        <input
+          v-model="name"
+          placeholder="Nama Province"
+          class="flex-1 rounded-lg border px-3 py-2 text-sm"
+          style="background: var(--ui-bg); border-color: var(--ui-border); color: var(--ui-text);"
+        />
+
+        <UButton color="primary" icon="i-heroicons-plus-circle" label="Tambah" @click="addProvince" />
+      </div>
+    </UCard>
+
+    <!-- Table Province -->
+    <UCard :ui="{ body: { padding: '' } }" class="relative overflow-hidden">
+      <div class="overflow-x-auto w-full">
+        <table class="min-w-full table-auto border-collapse" style="color: var(--ui-text);">
+          <thead style="background: var(--ui-bg-muted); border-bottom: 1px solid var(--ui-border);">
+            <tr>
+              <th class="px-3 py-3 text-left text-xs font-semibold uppercase whitespace-nowrap" style="color: var(--ui-text-highlighted);">
+                ID
+              </th>
+              <th class="px-3 py-3 text-left text-xs font-semibold uppercase whitespace-nowrap" style="color: var(--ui-text-highlighted);">
+                Province
+              </th>
+              <th class="px-3 py-3 text-center text-xs font-semibold uppercase whitespace-nowrap" style="color: var(--ui-text-highlighted);">
+                Action
+              </th>
+            </tr>
+          </thead>
+
+          <tbody style="background: var(--ui-bg);">
+            <tr
+              v-for="prov in filteredProvinces"
+              :key="prov.id"
+              class="transition-colors"
+              :style="{ borderBottom: '1px solid var(--ui-border)' }"
+            >
+              <td class="px-3 py-3 text-sm whitespace-nowrap">{{ prov.id }}</td>
+              <td class="px-3 py-3 text-sm whitespace-nowrap" style="color: var(--ui-text-highlighted);">
+                {{ prov.name }}
+              </td>
+              <td class="px-3 py-3 text-center whitespace-nowrap flex justify-center gap-2">
+                <UButton color="yellow" variant="soft" size="xs" icon="i-heroicons-pencil" label="Edit"
+                  @click="openEditModal(prov)" />
+                <UButton color="red" variant="soft" size="xs" icon="i-heroicons-trash" label="Hapus"
+                  @click="openDeleteModal(prov)" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </UCard>
 
     <!-- Modal Edit -->
-    <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div class="bg-white p-6 rounded-lg shadow-lg w-96">
-        <h2 class="text-xl font-bold mb-4">Edit Province</h2>
-        <input v-model="editProvince.name" class="border px-3 py-2 w-full mb-4 rounded" />
-        <div class="flex justify-end">
-          <button @click="showEditModal = false" class="px-4 py-2 bg-gray-300 rounded mr-2">Batal</button>
-          <button @click="saveUpdate" class="px-4 py-2 bg-green-600 text-white rounded">Simpan</button>
+    <Teleport to="body">
+      <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96">
+          <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Edit Province</h2>
+          <input v-model="editProvince.name" class="border px-3 py-2 w-full mb-4 rounded"
+            style="background: var(--ui-bg); border-color: var(--ui-border); color: var(--ui-text);" />
+          <div class="flex justify-end">
+            <UButton color="gray" label="Batal" @click="showEditModal = false" class="mr-2" />
+            <UButton color="green" label="Simpan" @click="saveUpdate" />
+          </div>
         </div>
       </div>
-    </div>
+    </Teleport>
 
     <!-- Modal Delete -->
-    <div v-if="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div class="bg-white p-6 rounded-lg shadow-lg w-96">
-        <h2 class="text-xl font-bold mb-4">Konfirmasi Hapus</h2>
-        <p>Apakah kamu yakin ingin menghapus <strong>{{ deleteTarget.name }}</strong>?</p>
-        <div class="flex justify-end mt-4">
-          <button @click="showDeleteModal = false" class="px-4 py-2 bg-gray-300 rounded mr-2">Batal</button>
-          <button @click="confirmDelete" class="px-4 py-2 bg-red-600 text-white rounded">Hapus</button>
+    <Teleport to="body">
+      <div v-if="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96">
+          <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Konfirmasi Hapus</h2>
+          <p class="text-gray-800 dark:text-gray-300 mb-4">
+            Yakin mau hapus <strong>{{ deleteTarget.name }}</strong>?
+          </p>
+          <div class="flex justify-end">
+            <UButton color="gray" label="Batal" @click="showDeleteModal = false" class="mr-2" />
+            <UButton color="red" label="Hapus" @click="confirmDelete" />
+          </div>
         </div>
       </div>
-    </div>
+    </Teleport>
   </div>
 </template>
+
+<style scoped>
+tr:hover {
+  background: var(--ui-bg-muted) !important;
+  transition: background 0.2s ease;
+}
+</style>

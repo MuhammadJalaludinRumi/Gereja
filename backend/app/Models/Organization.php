@@ -29,4 +29,9 @@ class Organization extends Model
     ];
 
     public $timestamps = false;
+
+    public function city()
+{
+    return $this->belongsTo(City::class, 'city');
+}
 }

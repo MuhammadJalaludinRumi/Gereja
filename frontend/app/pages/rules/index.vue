@@ -1,7 +1,7 @@
 <template>
     <div class="p-6">
       <h1 class="text-2xl font-bold mb-4">Daftar Rules</h1>
-  
+
       <div class="mb-4">
         <NuxtLink
           to="/rules/create"
@@ -10,7 +10,7 @@
           + Tambah Rule
         </NuxtLink>
       </div>
-  
+
       <table class="min-w-full border">
         <thead>
           <tr class="bg-gray-100">
@@ -24,8 +24,8 @@
         <tbody>
           <tr v-for="rule in rules" :key="rule.id">
             <td class="border px-4 py-2">{{ rule.id }}</td>
-            <td class="border px-4 py-2">{{ rule.role }}</td>
-            <td class="border px-4 py-2">{{ rule.acl }}</td>
+            <td class="border px-4 py-2">{{ rule.role_id }}</td>
+            <td class="border px-4 py-2">{{ rule.acl_id }}</td>
             <td class="border px-4 py-2">
               <span
                 :class="rule.permission ? 'text-green-600' : 'text-red-600'"
@@ -52,17 +52,17 @@
       </table>
     </div>
   </template>
-  
+
   <script setup lang="ts">
   import { useRules } from '~/composables/useRules'
-  
+
   const { getRules, deleteRule } = useRules()
   const rules = ref<any[]>([])
-  
+
   onMounted(async () => {
     rules.value = await getRules()
   })
-  
+
   const removeRule = async (id: number) => {
     if (confirm('Yakin ingin menghapus rule ini?')) {
       await deleteRule(id)
@@ -70,4 +70,3 @@
     }
   }
   </script>
-  

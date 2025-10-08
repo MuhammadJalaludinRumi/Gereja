@@ -26,4 +26,9 @@ class Group extends Model
     protected $casts = [
         'founded' => 'date',
     ];
+
+    public function city()
+    {
+        return $this->belongsTo(City::class, 'city');
+    }
 }
