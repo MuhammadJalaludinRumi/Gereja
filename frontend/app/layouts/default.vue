@@ -14,9 +14,51 @@ const links = [[{
     open.value = false
   }
 }, {
+  label: 'Acls',
+  icon: 'i-lucide-inbox',
+  to: '/acls',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
+  label: 'User Authorities',
+  icon: 'i-lucide-inbox',
+  to: '/user-authorities',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
+  label: 'Rules',
+  icon: 'i-lucide-inbox',
+  to: '/rules',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
+  label: 'License',
+  icon: 'i-lucide-inbox',
+  to: '/licenses',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
   label: 'Yayasan',
   icon: 'i-lucide-inbox',
   to: '/groups',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
+  label: 'News',
+  icon: 'i-lucide-inbox',
+  to: '/news',
+  onSelect: () => {
+    open.value = false
+  }
+}, {
+  label: 'Invoice',
+  icon: 'i-lucide-inbox',
+  to: '/invoices',
   onSelect: () => {
     open.value = false
   }

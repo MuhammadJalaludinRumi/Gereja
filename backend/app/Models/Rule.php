@@ -12,8 +12,8 @@ class Rule extends Model
     protected $table = 'rules';
 
     protected $fillable = [
-        'role',
-        'acl',
+        'role_id',
+        'acl_id',
         'permission',
     ];
 

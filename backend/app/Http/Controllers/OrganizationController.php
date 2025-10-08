@@ -10,8 +10,12 @@ class OrganizationController extends Controller
 {
     public function index()
     {
-        return response()->json(Organization::all());
+        $organizations = Organization::with('city')->get();
+
+        // buat debug
+        return response()->json($organizations);
     }
+
 
     public function store(Request $request)
     {

@@ -10,8 +10,10 @@ class GroupController extends Controller
 {
     public function index()
     {
-        return response()->json(Group::all());
+        $group = Group::with('city')->get();
 
+        // buat debug
+        return response()->json($group);
     }
 
     public function store(Request $request)

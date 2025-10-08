@@ -17,8 +17,8 @@ class RuleController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'role' => 'required|integer',
-            'acl' => 'required|integer',
+            'role_id' => 'required|integer',
+            'acl_id' => 'required|integer',
             'permission' => 'required|boolean',
         ]);
 
@@ -45,8 +45,8 @@ class RuleController extends Controller
         }
 
         $validated = $request->validate([
-            'role' => 'required|integer',
-            'acl' => 'required|integer',
+            'role_id' => 'required|integer',
+            'acl_id' => 'required|integer',
             'permission' => 'required|boolean',
         ]);
 
