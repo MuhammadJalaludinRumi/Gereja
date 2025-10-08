@@ -11,6 +11,7 @@ class GroupController extends Controller
     public function index()
     {
         return response()->json(Group::all());
+
     }
 
     public function store(Request $request)

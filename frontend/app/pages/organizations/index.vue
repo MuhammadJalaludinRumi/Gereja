@@ -1,74 +1,138 @@
 <template>
-  <div class="p-6">
-    <div class="flex justify-between items-center mb-4">
-      <h1 class="text-2xl font-bold">Daftar Organization</h1>
-      <NuxtLink
+  <div class="p-6 w-full overflow-hidden" style="color: var(--ui-text); background: var(--ui-bg);">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold" style="color: var(--ui-text-highlighted);">
+        Daftar Organization
+      </h1>
+      <UButton
         to="/organizations/create"
-        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-      >
-        + Tambah Organization
-      </NuxtLink>
+        icon="i-heroicons-plus-circle"
+        size="md"
+        color="primary"
+        label="Tambah Organization"
+      />
     </div>
 
-    <div v-if="organizations.length" class="overflow-x-auto">
-      <table class="min-w-full border text-sm">
-        <thead class="bg-gray-100">
-          <tr>
-            <th class="p-2 border">Name</th>
-            <th class="p-2 border">Abbreviation</th>
-            <th class="p-2 border">Address</th>
-            <th class="p-2 border">City</th>
-            <th class="p-2 border">Latitude</th>
-            <th class="p-2 border">Longitude</th>
-            <th class="p-2 border">Phone</th>
-            <th class="p-2 border">Email</th>
-            <th class="p-2 border">Website</th>
-            <th class="p-2 border">Logo</th>
-            <th class="p-2 border">Founded</th>
-            <th class="p-2 border">Legal</th>
-            <th class="p-2 border">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="org in organizations" :key="org.id" class="hover:bg-gray-50">
-            <td class="p-2 border">{{ org.name }}</td>
-            <td class="p-2 border">{{ org.abbreviation }}</td>
-            <td class="p-2 border">{{ org.address }}</td>
-            <td class="p-2 border">{{ org.city }}</td>
-            <td class="p-2 border">{{ org.latitude }}</td>
-            <td class="p-2 border">{{ org.longitude }}</td>
-            <td class="p-2 border">{{ org.phone }}</td>
-            <td class="p-2 border">{{ org.email }}</td>
-            <td class="p-2 border">
-              <a v-if="org.website" :href="org.website" target="_blank" class="text-blue-500 underline">
-                {{ org.website }}
-              </a>
-            </td>
-            <td class="p-2 border">
-              <img v-if="org.logo" :src="org.logo" alt="Logo" class="h-10" />
-            </td>
-            <td class="p-2 border">{{ formatDate(org.founded) }}</td>
-            <td class="p-2 border">{{ org.legal }}</td>
-            <td class="p-2 border flex gap-2">
-              <NuxtLink
-                :to="`/organizations/${org.id}`"
-                class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+    <!-- Table Card -->
+    <UCard :ui="{ body: { padding: '' } }" class="relative z-0 overflow-hidden">
+      <div class="overflow-x-auto w-full">
+        <table class="min-w-full table-auto border-collapse" style="color: var(--ui-text);">
+          <thead style="background: var(--ui-bg-muted); border-bottom: 1px solid var(--ui-border);">
+            <tr>
+              <th
+                v-for="head in tableHeaders"
+                :key="head"
+                class="px-3 py-3 text-left text-xs font-semibold uppercase whitespace-nowrap"
+                style="color: var(--ui-text-highlighted);"
               >
-                Edit
-              </NuxtLink>
-              <button
-                @click="remove(org.id)"
-                class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                {{ head }}
+              </th>
+              <th
+                class="px-3 py-3 text-center text-xs font-semibold uppercase whitespace-nowrap"
+                style="color: var(--ui-text-highlighted);"
               >
-                Delete
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+                Action
+              </th>
+            </tr>
+          </thead>
 
-    <p v-else class="text-gray-500">Belum ada data organization.</p>
+          <tbody style="background: var(--ui-bg);">
+            <tr
+              v-for="org in organizations"
+              :key="org.id"
+              class="transition-colors"
+              :style="{
+                borderBottom: '1px solid var(--ui-border)',
+                background: 'var(--ui-bg)',
+              }"
+              @mouseover="hover = org.id"
+              @mouseleave="hover = null"
+              :class="{ 'hovered-row': hover === org.id }"
+            >
+              <td class="px-3 py-3 text-sm font-medium whitespace-nowrap" style="color: var(--ui-text-highlighted);">
+                {{ org.name }}
+              </td>
+              <td class="px-3 py-3 text-sm whitespace-nowrap">{{ org.abbreviation }}</td>
+              <td class="px-3 py-3 text-sm max-w-[200px] truncate">{{ org.address }}</td>
+              <td class="px-3 py-3 text-sm">{{ org.city }}</td>
+              <td class="px-3 py-3 text-sm">{{ org.latitude }}</td>
+              <td class="px-3 py-3 text-sm">{{ org.longitude }}</td>
+              <td class="px-3 py-3 text-sm">{{ org.phone }}</td>
+              <td class="px-3 py-3 text-sm">{{ org.email }}</td>
+              <td class="px-3 py-3 text-sm whitespace-nowrap">
+                <a
+                  v-if="org.website"
+                  :href="org.website"
+                  target="_blank"
+                  style="color: var(--ui-primary); text-decoration: underline;"
+                >
+                  {{ org.website }}
+                </a>
+              </td>
+              <td class="px-3 py-3 text-sm whitespace-nowrap">
+                <img
+                  v-if="org.logo"
+                  :src="org.logo"
+                  alt="Logo"
+                  class="h-10 w-auto rounded border"
+                  style="border-color: var(--ui-border);"
+                />
+              </td>
+              <td class="px-3 py-3 text-sm whitespace-nowrap">{{ formatDate(org.founded) }}</td>
+              <td class="px-3 py-3 text-sm whitespace-nowrap">{{ org.legal }}</td>
+              <td class="px-3 py-3 text-sm whitespace-nowrap">
+                <div class="flex justify-center gap-2">
+                  <UButton
+                    :to="`/organizations/${org.id}`"
+                    icon="i-heroicons-pencil-square"
+                    size="xs"
+                    color="blue"
+                    variant="soft"
+                    label="Edit"
+                  />
+                  <UButton
+                    @click.stop="openDeleteModal(org.id)"
+                    icon="i-heroicons-trash"
+                    size="xs"
+                    color="red"
+                    variant="soft"
+                    label="Delete"
+                  />
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </UCard>
+
+    <!-- Delete Modal -->
+    <Teleport to="body">
+      <div v-if="isDeleteModalOpen" class="fixed inset-0 z-[99999] flex items-center justify-center" style="background: rgba(0,0,0,0.5);">
+        <UCard class="max-w-md w-full mx-4" style="background: var(--ui-bg); color: var(--ui-text); border: 1px solid var(--ui-border);">
+          <template #header>
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-semibold" style="color: var(--ui-text-highlighted);">
+                Konfirmasi Hapus
+              </h3>
+              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" @click="isDeleteModalOpen = false" />
+            </div>
+          </template>
+
+          <div class="py-4">
+            <p style="color: var(--ui-text);">Yakin ingin menghapus data ini?</p>
+          </div>
+
+          <template #footer>
+            <div class="flex justify-end gap-3">
+              <UButton color="gray" variant="soft" label="Batal" @click="isDeleteModalOpen = false" />
+              <UButton color="red" label="Hapus" @click="confirmDelete" />
+            </div>
+          </template>
+        </UCard>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -77,7 +141,16 @@ import { ref, onMounted } from 'vue'
 import { useOrganizations } from '~/composables/useOrganizations'
 
 const organizations = ref<any[]>([])
+const hover = ref<string | null>(null)
 const { getOrganizations, deleteOrganization } = useOrganizations()
+const isDeleteModalOpen = ref(false)
+const selectedOrgId = ref<string>('')
+
+const tableHeaders = [
+  'Name', 'Abbreviation', 'Address', 'City',
+  'Latitude', 'Longitude', 'Phone', 'Email',
+  'Website', 'Logo', 'Founded', 'Legal'
+]
 
 const fetchData = async () => {
   organizations.value = await getOrganizations()
@@ -85,11 +158,16 @@ const fetchData = async () => {
 
 onMounted(fetchData)
 
-const remove = async (id: string) => {
-  if (confirm('Yakin ingin menghapus data ini?')) {
-    await deleteOrganization(id)
-    await fetchData()
-  }
+const openDeleteModal = (id: string) => {
+  selectedOrgId.value = id
+  isDeleteModalOpen.value = true
+}
+
+const confirmDelete = async () => {
+  if (!selectedOrgId.value) return
+  await deleteOrganization(selectedOrgId.value)
+  isDeleteModalOpen.value = false
+  await fetchData()
 }
 
 const formatDate = (value: string | null) => {
@@ -97,3 +175,9 @@ const formatDate = (value: string | null) => {
   return value.split('T')[0]
 }
 </script>
+
+<style scoped>
+.hovered-row {
+  background: var(--ui-bg-muted) !important;
+}
+</style>
