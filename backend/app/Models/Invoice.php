@@ -15,5 +15,10 @@ class Invoice extends Model
         'total'
     ];
 
-    public $timestamps = false; // kalau tabel lu ga ada created_at updated_at
+    public $timestamps = false;
+
+    public function organization()
+    {
+        return $this->belongsTo(Organization::class, 'organization_id');
+    }
 }

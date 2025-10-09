@@ -4,5 +4,11 @@ export default defineAppConfig({
       primary: 'green',
       neutral: 'zinc'
     }
+  },
+  
+  fetch: {
+    options: {
+      credentials: 'include' // <--- COOKIE MODE AKTIF
+    }
   }
 })

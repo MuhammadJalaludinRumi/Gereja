@@ -62,4 +62,30 @@ class UserController extends Controller
 
         return response()->json(['message' => 'User deleted']);
     }
+
+        public function profile(Request $request)
+    {
+        return response()->json($request->user()); // auto dari token
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user(); // langsung dapet user dari token
+
+        $validated = $request->validate([
+            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
+            'password' => 'nullable|string|min:6'
+        ]);
+
+        $user->username = $validated['username'];
+        if (!empty($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        }
+
+        $user->save();
+
+        return response()->json([
+            'message' => 'Profile updated successfully'
+        ]);
+    }
 }

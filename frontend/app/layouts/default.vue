@@ -1,185 +1,62 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from '@nuxt/ui'
-
-const route = useRoute()
 const toast = useToast()
+const sidebarOpen = ref(false)
+const route = useRoute()
 
-const open = ref(false)
+watch(() => route.path, () => {
+  sidebarOpen.value = false
+})
 
-const links = [[{
-  label: 'Home',
-  icon: 'i-lucide-house',
-  to: '/',
-  onSelect: () => {
-    open.value = false
-  }
-}, {
-  label: 'Acls',
-  icon: 'i-lucide-inbox',
-  to: '/acls',
-  onSelect: () => {
-    open.value = false
-  }
-}, {
-  label: 'User Authorities',
-  icon: 'i-lucide-inbox',
-  to: '/user-authorities',
-  onSelect: () => {
-    open.value = false
-  }
-}, {
-  label: 'Rules',
-  icon: 'i-lucide-inbox',
-  to: '/rules',
-  onSelect: () => {
-    open.value = false
-  }
-}, {
-  label: 'License',
-  icon: 'i-lucide-inbox',
-  to: '/licenses',
-  onSelect: () => {
-    open.value = false
-  }
-}, {
-  label: 'Yayasan',
-  icon: 'i-lucide-inbox',
-  to: '/groups',
-  onSelect: () => {
-    open.value = false
-  }
-}, {
-  label: 'News',
-  icon: 'i-lucide-inbox',
-  to: '/news',
-  onSelect: () => {
-    open.value = false
-  }
-}, {
-  label: 'Invoice',
-  icon: 'i-lucide-inbox',
-  to: '/invoices',
-  onSelect: () => {
-    open.value = false
-  }
-}, {
-  label: 'Organizations',
-  icon: 'i-lucide-users',
-  to: '/organizations',
-  onSelect: () => {
-    open.value = false
-  }
-}, {
-  label: 'City',
-  icon: 'i-lucide-users',
-  to: '/city',
-  onSelect: () => {
-    open.value = false
-  }
-}, {
-  label: 'User Management',
-  icon: 'i-lucide-users',
-  to: '/users',
-  onSelect: () => {
-    open.value = false
-  }
-}, {
-  label: 'Role management',
-  icon: 'i-lucide-users',
-  to: '/roles',
-  onSelect: () => {
-    open.value = false
-  }
-}, {
-  label: 'Organization License',
-  icon: 'i-lucide-users',
-  to: '/organizationLicense',
-  onSelect: () => {
-    open.value = false
-  }
-}, {
-  label: 'Provinces',
-  icon: 'i-lucide-users',
-  to: '/province',
-  onSelect: () => {
-    open.value = false
-  }
-}], [{
-  label: 'Feedback',
-  icon: 'i-lucide-message-circle',
-  to: 'https://github.com/nuxt-ui-templates/dashboard',
-  target: '_blank'
-}, {
-  label: 'Help & Support',
-  icon: 'i-lucide-info',
-  to: 'https://github.com/nuxt-ui-templates/dashboard',
-  target: '_blank'
-}]] satisfies NavigationMenuItem[][]
-
-const groups = computed(() => [{
-  id: 'links',
-  label: 'Go to',
-  items: links.flat()
-}, {
-  id: 'code',
-  label: 'Code',
-  items: [{
-    id: 'source',
-    label: 'View page source',
-    icon: 'i-simple-icons-github',
-    to: `https://github.com/nuxt-ui-templates/dashboard/blob/main/app/pages${route.path === '/' ? '/index' : route.path}.vue`,
-    target: '_blank'
-  }]
-}])
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value
+}
 
 onMounted(async () => {
   const cookie = useCookie('cookie-consent')
-  if (cookie.value === 'accepted') {
-    return
-  }
+  if (cookie.value === 'accepted') return
 
   toast.add({
     title: 'We use first-party cookies to enhance your experience on our website.',
     duration: 0,
     close: false,
-    actions: [{
-      label: 'Accept',
-      color: 'neutral',
-      variant: 'outline',
-      onClick: () => {
-        cookie.value = 'accepted'
+    actions: [
+      {
+        label: 'Accept',
+        color: 'neutral',
+        variant: 'outline',
+        onClick: () => {
+          cookie.value = 'accepted'
+        }
+      },
+      {
+        label: 'Opt out',
+        color: 'neutral',
+        variant: 'ghost'
       }
-    }, {
-      label: 'Opt out',
-      color: 'neutral',
-      variant: 'ghost'
-    }]
+    ]
   })
 })
 </script>
 
 <template>
-  <UDashboardGroup unit="rem">
-    <UDashboardSidebar id="default" v-model:open="open" collapsible resizable class="bg-elevated/25"
-      :ui="{ footer: 'lg:border-t lg:border-default' }">
+  <UDashboardGroup
+    unit="rem"
+    class="min-h-screen bg-[var(--ui-bg)] text-[var(--ui-text)]"
+  >
+    <!-- Navbar -->
+    <AppNavbar
+      class="sticky top-0 z-50 border-b"
+      style="background: var(--ui-bg); border-color: var(--ui-border);"
+      @toggle-sidebar="toggleSidebar"
+    />
 
-      <template #default="{ collapsed }">
-        <div v-if="!collapsed" class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-          Navigasi
-        </div>
-        <UNavigationMenu :collapsed="collapsed" :items="links[0]" orientation="vertical" tooltip popover />
+    <!-- Sidebar -->
+    <AppSidebar v-model="sidebarOpen" />
 
-        <UNavigationMenu :collapsed="collapsed" :items="links[1]" orientation="vertical" tooltip class="mt-auto" />
-      </template>
-
-      <template #footer="{ collapsed }">
-        <UserMenu :collapsed="collapsed" />
-      </template>
-    </UDashboardSidebar>
-
-    <UDashboardSearch :groups="groups" />
-
-    <slot />
+    <!-- Konten utama (otomatis di bawah navbar tanpa resize) -->
+    <div class="flex-1 overflow-auto mt-15">
+      <slot />
+    </div>
 
     <NotificationsSlideover />
   </UDashboardGroup>
