@@ -7,18 +7,25 @@ use Illuminate\Http\Request;
 
 class RuleController extends Controller
 {
-    // 🔹 GET /api/rules
+    /**
+     * GET /api/rules
+     * Menampilkan semua rule dengan relasi role dan acl
+     */
     public function index()
     {
-        return response()->json(Rule::all());
+        $rules = Rule::with(['role', 'acl'])->get();
+        return response()->json($rules);
     }
 
-    // 🔹 POST /api/rules
+    /**
+     * POST /api/rules
+     * Menyimpan rule baru
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'role_id' => 'required|integer',
-            'acl_id' => 'required|integer',
+            'role_id' => 'required|integer|exists:roles,id',
+            'acl_id' => 'required|integer|exists:acls,id',
             'permission' => 'required|boolean',
         ]);
 
@@ -26,27 +33,36 @@ class RuleController extends Controller
         return response()->json($rule, 201);
     }
 
-    // 🔹 GET /api/rules/{id}
+    /**
+     * GET /api/rules/{id}
+     * Menampilkan satu rule berdasarkan ID
+     */
     public function show($id)
     {
-        $rule = Rule::find($id);
+        $rule = Rule::with(['role', 'acl'])->find($id);
+
         if (!$rule) {
             return response()->json(['message' => 'Rule not found'], 404);
         }
+
         return response()->json($rule);
     }
 
-    // 🔹 PUT /api/rules/{id}
+    /**
+     * PUT /api/rules/{id}
+     * Update rule berdasarkan ID
+     */
     public function update(Request $request, $id)
     {
         $rule = Rule::find($id);
+
         if (!$rule) {
             return response()->json(['message' => 'Rule not found'], 404);
         }
 
         $validated = $request->validate([
-            'role_id' => 'required|integer',
-            'acl_id' => 'required|integer',
+            'role_id' => 'required|integer|exists:roles,id',
+            'acl_id' => 'required|integer|exists:acls,id',
             'permission' => 'required|boolean',
         ]);
 
@@ -54,10 +70,14 @@ class RuleController extends Controller
         return response()->json($rule);
     }
 
-    // 🔹 DELETE /api/rules/{id}
+    /**
+     * DELETE /api/rules/{id}
+     * Menghapus rule berdasarkan ID
+     */
     public function destroy($id)
     {
         $rule = Rule::find($id);
+
         if (!$rule) {
             return response()->json(['message' => 'Rule not found'], 404);
         }
