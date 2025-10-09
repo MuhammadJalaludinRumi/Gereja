@@ -9,7 +9,8 @@ class InvoiceController extends Controller
 {
     public function index()
     {
-        return response()->json(Invoice::all());
+        $invoice = Invoice::with('organization')->get();
+        return response()->json($invoice);
     }
 
     public function show($id)

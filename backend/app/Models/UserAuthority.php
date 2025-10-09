@@ -12,10 +12,20 @@ class UserAuthority extends Model
     protected $table = 'user_authorities';
 
     protected $fillable = [
-        'user',
-        'role',
+        'user_id',
+        'role_id',
     ];
 
     // Matikan auto timestamps
     public $timestamps = false;
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
 }

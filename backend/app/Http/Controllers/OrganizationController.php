@@ -4,22 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Organization;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class OrganizationController extends Controller
 {
     public function index()
     {
         $organizations = Organization::with('city')->get();
-
-        // buat debug
         return response()->json($organizations);
     }
 
-
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $data = $request->validate([
             'name'         => 'required|string|max:255',
             'abbreviation' => 'nullable|string|max:50',
             'address'      => 'nullable|string|max:255',
@@ -28,14 +25,21 @@ class OrganizationController extends Controller
             'longitude'    => 'nullable|numeric',
             'phone'        => 'nullable|string|max:50',
             'email'        => 'nullable|email|max:255',
-            'group_id'     => 'nullable|int',
+            'group_id'     => 'nullable|integer',
             'website'      => 'nullable|string|max:255',
-            'logo'         => 'nullable|string|max:255',
+            'logo'         => 'nullable|file|image|max:2048',
             'founded'      => 'nullable|date',
             'legal'        => 'nullable|string|max:100',
         ]);
 
-        $org = Organization::create($validated);
+        // upload ke s3 kalo ada file logo
+        if ($request->hasFile('logo')) {
+            $path = $request->file('logo')->store('organizations', 's3');
+            $url = Storage::disk('s3')->url($path);
+            $data['logo'] = $url;
+        }
+
+        $org = Organization::create($data);
         return response()->json($org, 201);
     }
 
@@ -49,7 +53,7 @@ class OrganizationController extends Controller
     {
         $org = Organization::findOrFail($id);
 
-        $validated = $request->validate([
+        $data = $request->validate([
             'name'         => 'required|string|max:255',
             'abbreviation' => 'nullable|string|max:50',
             'address'      => 'nullable|string|max:255',
@@ -58,13 +62,21 @@ class OrganizationController extends Controller
             'longitude'    => 'nullable|numeric',
             'phone'        => 'nullable|string|max:50',
             'email'        => 'nullable|email|max:255',
+            'group_id'     => 'nullable|integer',
             'website'      => 'nullable|string|max:255',
-            'logo'         => 'nullable|string|max:255',
+            'logo'         => 'nullable|file|image|max:2048',
             'founded'      => 'nullable|date',
             'legal'        => 'nullable|string|max:100',
         ]);
 
-        $org->update($validated);
+        // upload baru kalau ada logo baru
+        if ($request->hasFile('logo')) {
+            $path = $request->file('logo')->store('organizations', 's3');
+            $url = Storage::disk('s3')->url($path);
+            $data['logo'] = $url;
+        }
+
+        $org->update($data);
         return response()->json($org);
     }
 

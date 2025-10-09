@@ -24,31 +24,22 @@ const period = ref<Period>('daily')
 
 <template>
   <UDashboardPanel id="home">
-    <template #header>
-      <UDashboardNavbar title="Home" :ui="{ right: 'gap-3' }">
-        <template #leading>
-          <UDashboardSidebarCollapse />
-        </template>
+    <template #leading>
+      <UDashboardSidebarCollapse />
+    </template>
 
-        <template #right>
-          <UTooltip text="Notifications" :shortcuts="['N']">
-            <UButton
-              color="neutral"
-              variant="ghost"
-              square
-              @click="isNotificationsSlideoverOpen = true"
-            >
-              <UChip color="error" inset>
-                <UIcon name="i-lucide-bell" class="size-5 shrink-0" />
-              </UChip>
-            </UButton>
-          </UTooltip>
+    <template #right>
+      <UTooltip text="Notifications" :shortcuts="['N']">
+        <UButton color="neutral" variant="ghost" square @click="isNotificationsSlideoverOpen = true">
+          <UChip color="error" inset>
+            <UIcon name="i-lucide-bell" class="size-5 shrink-0" />
+          </UChip>
+        </UButton>
+      </UTooltip>
 
-          <UDropdownMenu :items="items">
-            <UButton icon="i-lucide-profile" size="md" class="rounded-full" />
-          </UDropdownMenu>
-        </template>
-      </UDashboardNavbar>
+      <UDropdownMenu :items="items">
+        <UButton icon="i-lucide-profile" size="md" class="rounded-full" />
+      </UDropdownMenu>
     </template>
   </UDashboardPanel>
 </template>

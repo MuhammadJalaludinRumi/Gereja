@@ -7,10 +7,10 @@ use Illuminate\Http\Request;
 
 class UserAuthorityController extends Controller
 {
-    // GET /api/user-authorities
     public function index()
     {
-        return response()->json(UserAuthority::all());
+        $userAuthority = UserAuthority::with(['user', 'role'])->get();
+        return response()->json($userAuthority);
     }
 
     // GET /api/user-authorities/{id}
@@ -29,8 +29,8 @@ class UserAuthorityController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'user' => 'required|integer',
-            'role' => 'required|integer',
+            'user_id' => 'required|integer',
+            'role_id' => 'required|integer',
         ]);
 
         $userAuthority = UserAuthority::create($validated);
@@ -48,8 +48,8 @@ class UserAuthorityController extends Controller
         }
 
         $validated = $request->validate([
-            'user' => 'required|integer',
-            'role' => 'required|integer',
+            'user_id' => 'required|integer',
+            'role_id' => 'required|integer',
         ]);
 
         $userAuthority->update($validated);

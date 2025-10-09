@@ -30,7 +30,11 @@ const filteredCities = computed(() => {
 })
 
 const addCity = async () => {
-  if (!name.value || !province.value) return
+  if (!name.value || !province.value) {
+    alert('Isi nama kota dan pilih province dulu bro 🙏')
+    return
+  }
+
   await $fetch(apiCity, {
     method: 'POST',
     body: {
@@ -38,9 +42,10 @@ const addCity = async () => {
       province: province.value
     }
   })
+
   name.value = ''
   province.value = ''
-  fetchCities()
+  await fetchCities()
 }
 
 const deleteCity = async (id: number) => {
@@ -67,16 +72,6 @@ onMounted(() => {
     <!-- Form Tambah City -->
     <UCard class="mb-6" :ui="{ body: { padding: 'p-4' } }">
       <div class="flex flex-col md:flex-row gap-3 items-center">
-        <!-- Search Input -->
-        <div class="flex-1">
-          <input
-            v-model="search"
-            placeholder="Cari city / province..."
-            class="w-full border rounded-lg px-3 py-2 text-sm"
-            style="background: var(--ui-bg); border-color: var(--ui-border); color: var(--ui-text);"
-          />
-        </div>
-
         <!-- Province Selector -->
         <select
           v-model="province"
@@ -89,9 +84,27 @@ onMounted(() => {
           </option>
         </select>
 
+        <!-- Input Nama Kota -->
+        <input
+          v-model="name"
+          placeholder="Nama kota..."
+          class="flex-1 border rounded-lg px-3 py-2 text-sm"
+          style="background: var(--ui-bg); border-color: var(--ui-border); color: var(--ui-text);"
+        />
+
         <UButton color="primary" icon="i-heroicons-plus-circle" label="Tambah" @click="addCity" />
       </div>
     </UCard>
+
+    <!-- Search Input -->
+    <div class="mb-4">
+      <input
+        v-model="search"
+        placeholder="Cari City / province..."
+        class="w-full border rounded-lg px-3 py-2 text-sm"
+        style="background: var(--ui-bg); border-color: var(--ui-border); color: var(--ui-text);"
+      />
+    </div>
 
     <!-- Table Data City -->
     <UCard :ui="{ body: { padding: '' } }" class="relative overflow-hidden">

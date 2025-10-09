@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Role;
@@ -8,7 +9,8 @@ class RoleController extends Controller
 {
     public function index()
     {
-        return response()->json(Role::all());
+        $role = Role::with('organization')->get();
+        return response()->json($role);
     }
 
     public function show($id)

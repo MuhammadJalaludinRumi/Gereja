@@ -20,20 +20,26 @@ use App\Http\Controllers\AclController;
 //Route Auth
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout']);
+Route::middleware('auth:sanctum')->group(function () {
+    // route buat cek user & auth status
+    Route::get('/me', function (Request $request) {
+        try {
+            return response()->json([
+                'user' => $request->user(),
+                'auth_check' => \Illuminate\Support\Facades\Auth::check()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ], 500);
+        }
+    });
 
-Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
-    try {
-        return response()->json([
-            'user' => $request->user(),
-            'auth_check' => \Illuminate\Support\Facades\Auth::check()
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage(),
-            'line' => $e->getLine(),
-            'file' => $e->getFile()
-        ], 500);
-    }
+    // 🔥 route profile user
+    Route::get('/user/profile', [UserController::class, 'profile']);
+    Route::put('/user/profile', [UserController::class, 'updateProfile']);
 });
 //Route Users
 Route::apiResource('users', UserController::class);
