@@ -35,25 +35,19 @@ const links = [[
 <template>
   <!-- Overlay sidebar -->
   <Transition name="fade">
-    <div
-      v-if="isOpen"
-      class="fixed inset-0 z-[9999] flex"
-      style="background-color: rgba(0,0,0,0.5);"
-      @click.self="isOpen = false"
-    >
-      <UDashboardSidebar
-        id="default"
-        open
-        collapsible
-        resizable
+    <div v-if="isOpen" class="fixed inset-0 z-[9999] flex" style="background-color: rgba(0,0,0,0.5);"
+      @click.self="isOpen = false">
+      <UDashboardSidebar id="default" open collapsible resizable
         class="bg-[var(--ui-bg)] text-[var(--ui-text)] w-64 h-full border-r border-[var(--ui-border)] shadow-xl"
-        :ui="{ footer: 'lg:border-t lg:border-default' }"
-      >
+        :ui="{ footer: 'lg:border-t lg:border-default' }">
         <template #default="{ collapsed }">
           <div v-if="!collapsed" class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
             Navigasi
           </div>
           <UNavigationMenu :collapsed="collapsed" :items="links[0]" orientation="vertical" tooltip popover />
+        </template>
+        <template #footer="{ collapsed }">
+          <UserMenu :collapsed="collapsed" />
         </template>
       </UDashboardSidebar>
     </div>
@@ -65,6 +59,7 @@ const links = [[
 .fade-leave-active {
   transition: opacity 0.2s ease;
 }
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;

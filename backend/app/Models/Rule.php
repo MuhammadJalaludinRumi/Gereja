@@ -17,10 +17,24 @@ class Rule extends Model
         'permission',
     ];
 
-    // Primary key auto increment (default)
     protected $primaryKey = 'id';
     public $incrementing = true;
     protected $keyType = 'int';
+    public $timestamps = false;
 
-    public $timestamps = false; // karena tidak ada created_at & updated_at
+    /**
+     * Relasi ke tabel ACL
+     */
+    public function acl()
+    {
+        return $this->belongsTo(Acl::class, 'acl_id');
+    }
+
+    /**
+     * Relasi ke tabel Role
+     */
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
 }
