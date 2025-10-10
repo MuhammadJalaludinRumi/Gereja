@@ -1,13 +1,18 @@
+<!-- pages/roles/index.vue -->
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useRoles } from '~/composables/useRoles'
 
-const { roles, fetchRoles, deleteRole } = useRoles()
 const router = useRouter()
+const { roles, fetchRoles, deleteRole } = useRoles()
 
 const search = ref('')
-const showDeleteModal = ref(false)
-const deleteTarget = ref<any>(null)
+const hover = ref<number | null>(null)
+const isDeleteModalOpen = ref(false)
+const selectedRole = ref<any | null>(null)
+const errorMessage = ref<string | null>(null)
+const showErrorModal = ref(false)
 
 const filteredRoles = computed(() => {
   if (!search.value) return roles.value
@@ -19,20 +24,24 @@ const filteredRoles = computed(() => {
 })
 
 const openDeleteModal = (role: any) => {
-  deleteTarget.value = role
-  showDeleteModal.value = true
+  selectedRole.value = role
+  isDeleteModalOpen.value = true
 }
 
 const confirmDelete = async () => {
-  if (!deleteTarget.value) return
-  await deleteRole(deleteTarget.value.id)
-  showDeleteModal.value = false
-  await fetchRoles()
+  if (!selectedRole.value?.id) return
+  try {
+    await deleteRole(selectedRole.value.id)
+    isDeleteModalOpen.value = false
+    selectedRole.value = null
+    await fetchRoles()
+  } catch (err: any) {
+    errorMessage.value = err.message || 'Gagal menghapus role'
+    showErrorModal.value = true
+  }
 }
 
-onMounted(() => {
-  fetchRoles()
-})
+onMounted(() => fetchRoles())
 </script>
 
 <template>
@@ -61,17 +70,13 @@ onMounted(() => {
     <!-- Table -->
     <UCard :ui="{ body: { padding: '' } }" class="relative overflow-hidden">
       <div class="overflow-x-auto w-full">
-        <table class="min-w-full table-auto border-collapse" style="color: var(--ui-text);">
+        <table class="min-w-full table-auto border-collapse">
           <thead style="background: var(--ui-bg-muted); border-bottom: 1px solid var(--ui-border);">
             <tr>
-              <th class="px-3 py-3 text-left text-xs font-semibold uppercase whitespace-nowrap"
-                style="color: var(--ui-text-highlighted);">ID</th>
-              <th class="px-3 py-3 text-left text-xs font-semibold uppercase whitespace-nowrap"
-                style="color: var(--ui-text-highlighted);">Organization</th>
-              <th class="px-3 py-3 text-left text-xs font-semibold uppercase whitespace-nowrap"
-                style="color: var(--ui-text-highlighted);">Role Name</th>
-              <th class="px-3 py-3 text-center text-xs font-semibold uppercase whitespace-nowrap"
-                style="color: var(--ui-text-highlighted);">Action</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold uppercase whitespace-nowrap" style="color: var(--ui-text-highlighted);">ID</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold uppercase whitespace-nowrap" style="color: var(--ui-text-highlighted);">Organization</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold uppercase whitespace-nowrap" style="color: var(--ui-text-highlighted);">Role Name</th>
+              <th class="px-3 py-3 text-center text-xs font-semibold uppercase whitespace-nowrap" style="color: var(--ui-text-highlighted);">Action</th>
             </tr>
           </thead>
 
@@ -80,15 +85,14 @@ onMounted(() => {
               v-for="role in filteredRoles"
               :key="role.id"
               class="transition-colors"
+              @mouseover="hover = role.id"
+              @mouseleave="hover = null"
+              :class="{ 'hovered-row': hover === role.id }"
               :style="{ borderBottom: '1px solid var(--ui-border)' }"
             >
               <td class="px-3 py-3 text-sm whitespace-nowrap">{{ role.id }}</td>
-              <td class="px-3 py-3 text-sm whitespace-nowrap text-blue-400 font-medium">
-                {{ role.organization?.name || '-' }}
-              </td>
-              <td class="px-3 py-3 text-sm whitespace-nowrap text-green-400 font-medium">
-                {{ role.name || '-' }}
-              </td>
+              <td class="px-3 py-3 text-sm whitespace-nowrap text-blue-400 font-medium">{{ role.organization?.name || '-' }}</td>
+              <td class="px-3 py-3 text-sm whitespace-nowrap text-green-400 font-medium">{{ role.name || '-' }}</td>
               <td class="px-3 py-3 text-center whitespace-nowrap flex justify-center gap-2">
                 <UButton
                   :to="`/roles/${role.id}`"
@@ -108,40 +112,69 @@ onMounted(() => {
                 />
               </td>
             </tr>
+            <tr v-if="!filteredRoles.length">
+              <td colspan="4" class="text-center py-6 text-gray-400">No data found.</td>
+            </tr>
           </tbody>
         </table>
       </div>
-
-      <div v-if="!filteredRoles.length" class="text-center py-6 text-gray-400">
-        No data found.
-      </div>
     </UCard>
 
-    <!-- Modal Delete -->
+    <!-- Delete Modal -->
     <Teleport to="body">
-      <div
-        v-if="showDeleteModal"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      >
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96">
-          <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Konfirmasi Hapus</h2>
-          <p class="text-gray-800 dark:text-gray-300 mb-4">
-            Yakin mau hapus role <strong>{{ deleteTarget?.name }}</strong> dari organisasi
-            <strong>{{ deleteTarget?.organization?.name }}</strong>?
-          </p>
-          <div class="flex justify-end">
-            <UButton color="gray" label="Batal" @click="showDeleteModal = false" class="mr-2" />
-            <UButton color="red" label="Hapus" @click="confirmDelete" />
+      <div v-if="isDeleteModalOpen" class="fixed inset-0 z-[99999] flex items-center justify-center" style="background: rgba(0,0,0,0.5);">
+        <UCard class="max-w-md w-full mx-4" style="background: var(--ui-bg); color: var(--ui-text); border: 1px solid var(--ui-border);">
+          <template #header>
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-semibold" style="color: var(--ui-text-highlighted);">Konfirmasi Hapus</h3>
+              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" @click="isDeleteModalOpen = false" />
+            </div>
+          </template>
+
+          <div class="py-4">
+            <p style="color: var(--ui-text);">
+              Yakin ingin menghapus role <strong>{{ selectedRole?.name }}</strong> dari organisasi <strong>{{ selectedRole?.organization?.name }}</strong>?
+            </p>
           </div>
-        </div>
+
+          <template #footer>
+            <div class="flex justify-end gap-3">
+              <UButton color="gray" variant="soft" label="Batal" @click="isDeleteModalOpen = false" />
+              <UButton color="red" label="Hapus" @click="confirmDelete" />
+            </div>
+          </template>
+        </UCard>
+      </div>
+    </Teleport>
+
+    <!-- Error Modal -->
+    <Teleport to="body">
+      <div v-if="showErrorModal" class="fixed inset-0 z-[99999] flex items-center justify-center" style="background: rgba(0,0,0,0.5);">
+        <UCard class="max-w-md w-full mx-4" style="background: var(--ui-bg); color: var(--ui-text); border: 1px solid var(--ui-border);">
+          <template #header>
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-semibold" style="color: var(--ui-text-highlighted);">Error</h3>
+              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" @click="showErrorModal = false" />
+            </div>
+          </template>
+
+          <div class="py-4">
+            <p style="color: var(--ui-text);">{{ errorMessage }}</p>
+          </div>
+
+          <template #footer>
+            <div class="flex justify-end gap-3">
+              <UButton color="gray" variant="soft" label="Tutup" @click="showErrorModal = false" />
+            </div>
+          </template>
+        </UCard>
       </div>
     </Teleport>
   </div>
 </template>
 
 <style scoped>
-tr:hover {
+.hovered-row {
   background: var(--ui-bg-muted) !important;
-  transition: background 0.2s ease;
 }
 </style>

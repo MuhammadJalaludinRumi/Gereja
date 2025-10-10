@@ -77,31 +77,17 @@ onMounted(async () => {
 
 const submit = async () => {
   serverError.value = null
-
-  if (!form.name) {
-    serverError.value = 'Nama group wajib diisi'
-    return
-  }
-
   saving.value = true
 
   try {
-    // Kalau ada file logo baru, kirim FormData
-    if (logoFile.value) {
-      const fd = new FormData()
-      Object.entries(form).forEach(([key, val]) => {
-        if (key !== 'logo') { // skip logo lama
-          fd.append(key, val || '')
-        }
-      })
-      fd.append('logo', logoFile.value)
+    const fd = new FormData()
+    Object.entries(form).forEach(([key, val]) => {
+      if (key !== 'logo') fd.append(key, val || '')
+    })
+    if (logoFile.value) fd.append('logo', logoFile.value)
+    fd.append('_method', 'PUT') // penting buat Laravel
 
-      await updateGroup(Number(route.params.id), fd)
-    } else {
-      // Kalau gak ada file baru, kirim JSON biasa
-      await updateGroup(Number(route.params.id), form)
-    }
-
+    await updateGroup(Number(route.params.id), fd, true)
     router.push('/groups')
   } catch (err: any) {
     console.error('Update error:', err)
@@ -119,13 +105,7 @@ const submit = async () => {
       <h1 class="text-2xl font-bold" style="color: var(--ui-text-highlighted);">
         Edit Group
       </h1>
-      <UButton
-        to="/groups"
-        icon="i-heroicons-arrow-left"
-        color="gray"
-        variant="soft"
-        label="Back"
-      />
+      <UButton to="/groups" icon="i-heroicons-arrow-left" color="gray" variant="soft" label="Back" />
     </div>
 
     <!-- Loading -->
@@ -139,14 +119,9 @@ const submit = async () => {
           <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
             Name <span class="text-red-500">*</span>
           </label>
-          <input
-            v-model="form.name"
-            type="text"
-            required
-            placeholder="Masukkan nama group"
+          <input v-model="form.name" type="text" required placeholder="Masukkan nama group"
             class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-          />
+            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);" />
         </div>
 
         <!-- Address -->
@@ -154,13 +129,9 @@ const submit = async () => {
           <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
             Address
           </label>
-          <textarea
-            v-model="form.address"
-            placeholder="Masukkan alamat"
-            rows="3"
+          <textarea v-model="form.address" placeholder="Masukkan alamat" rows="3"
             class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-          ></textarea>
+            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"></textarea>
         </div>
 
         <!-- City -->
@@ -168,17 +139,10 @@ const submit = async () => {
           <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
             City
           </label>
-          <select
-            v-model="form.city"
-            class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-          >
+          <select v-model="form.city" class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
+            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);">
             <option value="" disabled>Pilih Kota</option>
-            <option
-              v-for="city in cities"
-              :key="city.id"
-              :value="city.id"
-            >
+            <option v-for="city in cities" :key="city.id" :value="city.id">
               {{ city.name }}
             </option>
           </select>
@@ -193,26 +157,18 @@ const submit = async () => {
             <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
               Phone
             </label>
-            <input
-              v-model="form.phone"
-              type="tel"
-              placeholder="08123456789"
+            <input v-model="form.phone" type="tel" placeholder="08123456789"
               class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-            />
+              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);" />
           </div>
 
           <div>
             <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
               Email
             </label>
-            <input
-              v-model="form.email"
-              type="email"
-              placeholder="email@example.com"
+            <input v-model="form.email" type="email" placeholder="email@example.com"
               class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-            />
+              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);" />
           </div>
         </div>
 
@@ -221,13 +177,9 @@ const submit = async () => {
           <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
             Website
           </label>
-          <input
-            v-model="form.website"
-            type="text"
-            placeholder="https://example.com"
+          <input v-model="form.website" type="text" placeholder="https://example.com"
             class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-          />
+            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);" />
         </div>
 
         <!-- Logo Upload -->
@@ -239,32 +191,20 @@ const submit = async () => {
           <!-- Current Logo -->
           <div v-if="currentLogo && !logoPreview" class="mb-3">
             <p class="text-xs mb-2" style="color: var(--ui-text-dimmed);">Current logo:</p>
-            <img
-              :src="currentLogo"
-              alt="Current Logo"
-              class="h-20 w-auto rounded border"
-              style="border-color: var(--ui-border);"
-            />
+            <img :src="currentLogo" alt="Current Logo" class="h-20 w-auto rounded border"
+              style="border-color: var(--ui-border);" />
           </div>
 
           <!-- Upload new logo -->
-          <input
-            type="file"
-            accept="image/*"
-            @change="onFileChange"
+          <input type="file" accept="image/*" @change="onFileChange"
             class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-          />
+            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);" />
 
           <!-- New Logo Preview -->
           <div v-if="logoPreview" class="mt-3">
             <p class="text-xs mb-2" style="color: var(--ui-text-dimmed);">New logo preview:</p>
-            <img
-              :src="logoPreview"
-              alt="New Logo Preview"
-              class="h-20 w-auto rounded border"
-              style="border-color: var(--ui-border);"
-            />
+            <img :src="logoPreview" alt="New Logo Preview" class="h-20 w-auto rounded border"
+              style="border-color: var(--ui-border);" />
           </div>
 
           <p class="text-xs mt-2" style="color: var(--ui-text-dimmed);">
@@ -278,54 +218,32 @@ const submit = async () => {
             <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
               Founded Date
             </label>
-            <input
-              v-model="form.founded"
-              type="date"
-              class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-            />
+            <input v-model="form.founded" type="date" class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
+              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);" />
           </div>
 
           <div>
             <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
               Legal
             </label>
-            <input
-              v-model="form.legal"
-              type="text"
-              placeholder="Legal entity"
+            <input v-model="form.legal" type="text" placeholder="Legal entity"
               class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-            />
+              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);" />
           </div>
         </div>
 
         <!-- Error Alert -->
-        <div
-          v-if="serverError"
-          class="px-4 py-3 rounded-lg text-sm"
-          style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444;"
-        >
+        <div v-if="serverError" class="px-4 py-3 rounded-lg text-sm"
+          style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444;">
           {{ serverError }}
         </div>
 
         <!-- Action Buttons -->
         <div class="flex items-center gap-3 pt-2">
-          <UButton
-            type="submit"
-            :loading="saving"
-            :disabled="saving"
-            color="primary"
-            icon="i-heroicons-check-circle"
-            :label="saving ? 'Updating...' : 'Update Group'"
-          />
-          <UButton
-            color="gray"
-            variant="soft"
-            icon="i-heroicons-x-mark"
-            label="Cancel"
-            @click="router.push('/groups')"
-          />
+          <UButton type="submit" :loading="saving" :disabled="saving" color="primary" icon="i-heroicons-check-circle"
+            :label="saving ? 'Updating...' : 'Update Group'" />
+          <UButton color="gray" variant="soft" icon="i-heroicons-x-mark" label="Cancel"
+            @click="router.push('/groups')" />
         </div>
       </form>
     </UCard>
@@ -336,7 +254,8 @@ const submit = async () => {
         <span class="text-blue-400 text-lg">ℹ️</span>
         <div class="text-sm" style="color: var(--ui-text-dimmed);">
           <p class="font-semibold mb-1" style="color: var(--ui-text);">Note:</p>
-          <p>Field yang ditandai dengan <span class="text-red-500">*</span> wajib diisi. Kosongkan upload logo jika tidak ingin mengubah logo yang sudah ada.</p>
+          <p>Field yang ditandai dengan <span class="text-red-500">*</span> wajib diisi. Kosongkan upload logo jika
+            tidak ingin mengubah logo yang sudah ada.</p>
         </div>
       </div>
     </UCard>

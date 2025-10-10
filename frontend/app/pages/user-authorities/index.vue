@@ -4,9 +4,13 @@ import { ref, computed, onMounted } from 'vue'
 import { useUserAuthorities } from '~/composables/useUserAuthorities'
 
 const { userAuthorities, loading, error, fetchAll, remove } = useUserAuthorities()
+
 const search = ref('')
-const showDeleteModal = ref(false)
-const deleteTarget = ref<any>(null)
+const hover = ref<number | null>(null)
+const isDeleteModalOpen = ref(false)
+const selectedAuthority = ref<any | null>(null)
+const errorMessage = ref<string | null>(null)
+const showErrorModal = ref(false)
 
 const filteredAuthorities = computed(() => {
   if (!search.value) return userAuthorities.value
@@ -18,20 +22,24 @@ const filteredAuthorities = computed(() => {
 })
 
 const openDeleteModal = (ua: any) => {
-  deleteTarget.value = ua
-  showDeleteModal.value = true
+  selectedAuthority.value = ua
+  isDeleteModalOpen.value = true
 }
 
 const confirmDelete = async () => {
-  if (!deleteTarget.value) return
-  await remove(deleteTarget.value.id)
-  showDeleteModal.value = false
-  await fetchAll()
+  if (!selectedAuthority.value?.id) return
+  try {
+    await remove(selectedAuthority.value.id)
+    isDeleteModalOpen.value = false
+    selectedAuthority.value = null
+    await fetchAll()
+  } catch (err: any) {
+    errorMessage.value = err.message || 'Gagal menghapus authority'
+    showErrorModal.value = true
+  }
 }
 
-onMounted(() => {
-  fetchAll()
-})
+onMounted(() => fetchAll())
 </script>
 
 <template>
@@ -59,24 +67,19 @@ onMounted(() => {
       />
     </UCard>
 
-    <!-- Loading & Error -->
+    <!-- Loading -->
     <div v-if="loading" class="mb-4 text-sm text-gray-400">Loading...</div>
-    <div v-if="error" class="text-red-600 mb-4">{{ error }}</div>
 
     <!-- Table -->
     <UCard :ui="{ body: { padding: '' } }" class="relative overflow-hidden">
       <div class="overflow-x-auto w-full">
-        <table class="min-w-full table-auto border-collapse" style="color: var(--ui-text);">
+        <table class="min-w-full table-auto border-collapse">
           <thead style="background: var(--ui-bg-muted); border-bottom: 1px solid var(--ui-border);">
             <tr>
-              <th class="px-3 py-3 text-left text-xs font-semibold uppercase whitespace-nowrap"
-                style="color: var(--ui-text-highlighted);">ID</th>
-              <th class="px-3 py-3 text-left text-xs font-semibold uppercase whitespace-nowrap"
-                style="color: var(--ui-text-highlighted);">User</th>
-              <th class="px-3 py-3 text-left text-xs font-semibold uppercase whitespace-nowrap"
-                style="color: var(--ui-text-highlighted);">Role</th>
-              <th class="px-3 py-3 text-center text-xs font-semibold uppercase whitespace-nowrap"
-                style="color: var(--ui-text-highlighted);">Action</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold uppercase whitespace-nowrap" style="color: var(--ui-text-highlighted);">ID</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold uppercase whitespace-nowrap" style="color: var(--ui-text-highlighted);">User</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold uppercase whitespace-nowrap" style="color: var(--ui-text-highlighted);">Role</th>
+              <th class="px-3 py-3 text-center text-xs font-semibold uppercase whitespace-nowrap" style="color: var(--ui-text-highlighted);">Action</th>
             </tr>
           </thead>
 
@@ -85,15 +88,14 @@ onMounted(() => {
               v-for="ua in filteredAuthorities"
               :key="ua.id"
               class="transition-colors"
+              @mouseover="hover = ua.id"
+              @mouseleave="hover = null"
+              :class="{ 'hovered-row': hover === ua.id }"
               :style="{ borderBottom: '1px solid var(--ui-border)' }"
             >
               <td class="px-3 py-3 text-sm whitespace-nowrap">{{ ua.id }}</td>
-              <td class="px-3 py-3 text-sm whitespace-nowrap text-blue-400 font-medium">
-                {{ ua.user?.username || '-' }}
-              </td>
-              <td class="px-3 py-3 text-sm whitespace-nowrap text-green-400 font-medium">
-                {{ ua.role?.name || '-' }}
-              </td>
+              <td class="px-3 py-3 text-sm text-blue-400 font-medium whitespace-nowrap">{{ ua.user?.username || '-' }}</td>
+              <td class="px-3 py-3 text-sm text-green-400 font-medium whitespace-nowrap">{{ ua.role?.name || '-' }}</td>
               <td class="px-3 py-3 text-center whitespace-nowrap flex justify-center gap-2">
                 <UButton
                   :to="`/user-authorities/${ua.id}`"
@@ -113,40 +115,69 @@ onMounted(() => {
                 />
               </td>
             </tr>
+            <tr v-if="!filteredAuthorities.length && !loading">
+              <td colspan="4" class="text-center py-6 text-gray-400">No data found.</td>
+            </tr>
           </tbody>
         </table>
       </div>
-
-      <div v-if="!filteredAuthorities.length && !loading" class="text-center py-6 text-gray-400">
-        No data found.
-      </div>
     </UCard>
 
-    <!-- Modal Delete -->
+    <!-- Delete Modal -->
     <Teleport to="body">
-      <div
-        v-if="showDeleteModal"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      >
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96">
-          <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Konfirmasi Hapus</h2>
-          <p class="text-gray-800 dark:text-gray-300 mb-4">
-            Yakin mau hapus <strong>{{ deleteTarget?.user?.username }}</strong> dengan role
-            <strong>{{ deleteTarget?.role?.name }}</strong>?
-          </p>
-          <div class="flex justify-end">
-            <UButton color="gray" label="Batal" @click="showDeleteModal = false" class="mr-2" />
-            <UButton color="red" label="Hapus" @click="confirmDelete" />
+      <div v-if="isDeleteModalOpen" class="fixed inset-0 z-[99999] flex items-center justify-center" style="background: rgba(0,0,0,0.5);">
+        <UCard class="max-w-md w-full mx-4" style="background: var(--ui-bg); color: var(--ui-text); border: 1px solid var(--ui-border);">
+          <template #header>
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-semibold" style="color: var(--ui-text-highlighted);">Konfirmasi Hapus</h3>
+              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" @click="isDeleteModalOpen = false" />
+            </div>
+          </template>
+
+          <div class="py-4">
+            <p style="color: var(--ui-text);">
+              Yakin ingin menghapus <strong>{{ selectedAuthority?.user?.username }}</strong> dengan role <strong>{{ selectedAuthority?.role?.name }}</strong>?
+            </p>
           </div>
-        </div>
+
+          <template #footer>
+            <div class="flex justify-end gap-3">
+              <UButton color="gray" variant="soft" label="Batal" @click="isDeleteModalOpen = false" />
+              <UButton color="red" label="Hapus" @click="confirmDelete" />
+            </div>
+          </template>
+        </UCard>
+      </div>
+    </Teleport>
+
+    <!-- Error Modal -->
+    <Teleport to="body">
+      <div v-if="showErrorModal" class="fixed inset-0 z-[99999] flex items-center justify-center" style="background: rgba(0,0,0,0.5);">
+        <UCard class="max-w-md w-full mx-4" style="background: var(--ui-bg); color: var(--ui-text); border: 1px solid var(--ui-border);">
+          <template #header>
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-semibold" style="color: var(--ui-text-highlighted);">Error</h3>
+              <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark-20-solid" @click="showErrorModal = false" />
+            </div>
+          </template>
+
+          <div class="py-4">
+            <p style="color: var(--ui-text);">{{ errorMessage }}</p>
+          </div>
+
+          <template #footer>
+            <div class="flex justify-end gap-3">
+              <UButton color="gray" variant="soft" label="Tutup" @click="showErrorModal = false" />
+            </div>
+          </template>
+        </UCard>
       </div>
     </Teleport>
   </div>
 </template>
 
 <style scoped>
-tr:hover {
+.hovered-row {
   background: var(--ui-bg-muted) !important;
-  transition: background 0.2s ease;
 }
 </style>
