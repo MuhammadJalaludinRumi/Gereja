@@ -19,18 +19,20 @@ export const useInvoices = () => {
   }
 
   const createInvoice = async (payload: Invoice) => {
-    await $fetch(baseUrl, { method: 'POST', body: payload })
-    await fetchInvoices()
+    const newInvoice = await $fetch<Invoice>(baseUrl, { method: 'POST', body: payload })
+    invoices.value.push(newInvoice)
   }
 
   const updateInvoice = async (id: number, payload: Partial<Invoice>) => {
-    await $fetch(`${baseUrl}/${id}`, { method: 'PUT', body: payload })
-    await fetchInvoices()
+    const updated = await $fetch<Invoice>(`${baseUrl}/${id}`, { method: 'PUT', body: payload })
+
+    const index = invoices.value.findIndex(inv => inv.id === id)
+    if (index !== -1) invoices.value[index] = { ...invoices.value[index], ...updated }
   }
 
   const deleteInvoice = async (id: number) => {
     await $fetch(`${baseUrl}/${id}`, { method: 'DELETE' })
-    await fetchInvoices()
+    invoices.value = invoices.value.filter(inv => inv.id !== id)
   }
 
   return { invoices, fetchInvoices, createInvoice, updateInvoice, deleteInvoice }

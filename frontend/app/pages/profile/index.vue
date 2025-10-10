@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 
-const apiProfile = '/api/user/profile'
+const apiProfile = 'localhost:8000/api/user/profile'
 const config = useRuntimeConfig()
 const { user, fetchUser, token } = useAuth()
 

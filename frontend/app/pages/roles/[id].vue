@@ -1,24 +1,21 @@
-<!-- pages/organizationLicense/[id].vue -->
+<!-- pages/role/[id].vue -->
 <script setup lang="ts">
 import { reactive, ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useOrganizationLicenses } from '~/composables/useOrganizationLicenses'
+import { useRoles } from '~/composables/useRoles'
+import { useOrganizations } from '~/composables/useOrganizations'
 
 const route = useRoute()
 const router = useRouter()
-const { update, getById } = useOrganizationLicenses()
-const api = useRuntimeConfig().public.apiBase
+const { roles, updateRole } = useRoles()
+const { getOrganizations } = useOrganizations()
 
 const form = reactive({
+  name: '',
   organization_id: null as number | null,
-  license_id: null as number | null,
-  max_member: 0,
-  is_active: false,
-  expiry: '',
 })
 
 const organizations = ref<{ id: number; name: string }[]>([])
-const licenses = ref<{ id: number; name: string }[]>([])
 const loading = ref(true)
 const saving = ref(false)
 const serverError = ref<string | null>(null)
@@ -26,31 +23,26 @@ const serverError = ref<string | null>(null)
 const selectedOrg = computed(() =>
   organizations.value.find(o => o.id === form.organization_id)
 )
-const selectedLicense = computed(() =>
-  licenses.value.find(l => l.id === form.license_id)
-)
 
 onMounted(async () => {
+  loading.value = true
   try {
-    const data = await getById(Number(route.params.id))
-    form.organization_id = data.organization_id
-    form.license_id = data.license_id
-    form.max_member = data.max_member
-    form.is_active = !!data.is_active
-    form.expiry = data.expiry?.replace(' ', 'T') || ''
+    const api = useRuntimeConfig().public.apiBase
+    const id = Number(route.params.id)
 
-    // ambil data dropdown
-    const orgRes = await $fetch(`${api}/organizations`)
-    const licRes = await $fetch(`${api}/licenses`)
-    organizations.value = Array.isArray(orgRes)
-      ? orgRes.sort((a, b) => a.name.localeCompare(b.name))
-      : []
-    licenses.value = Array.isArray(licRes)
-      ? licRes.sort((a, b) => a.name.localeCompare(b.name))
-      : []
+    // ambil role by id pake useFetch
+    const { data, error } = await useFetch(`${api}/roles/${id}`)
+    if (error.value || !data.value) throw new Error(error.value?.message || 'Role tidak ditemukan')
+
+    form.name = data.value.name
+    form.organization_id = data.value.organization_id
+
+    // ambil organization buat dropdown
+    const orgs = await getOrganizations()
+    organizations.value = Array.isArray(orgs) ? orgs.sort((a, b) => a.name.localeCompare(b.name)) : []
   } catch (err: any) {
     console.error(err)
-    serverError.value = err.message || 'Gagal memuat data.'
+    serverError.value = err.message || 'Gagal memuat data'
   } finally {
     loading.value = false
   }
@@ -58,30 +50,26 @@ onMounted(async () => {
 
 const updateData = async () => {
   serverError.value = null
-  const id = Number(route.params.id)
-
-  if (!form.organization_id) {
-    serverError.value = 'Organization wajib dipilih.'
+  if (!form.name) {
+    serverError.value = 'Name wajib diisi'
     return
   }
-  if (!form.license_id) {
-    serverError.value = 'License wajib dipilih.'
+  if (!form.organization_id) {
+    serverError.value = 'Organization wajib dipilih'
     return
   }
 
   saving.value = true
   try {
-    await update(id, {
+    const id = Number(route.params.id)
+    await updateRole(id, {
+      name: form.name,
       organization_id: form.organization_id,
-      license_id: form.license_id,
-      max_member: Number(form.max_member),
-      is_active: !!form.is_active,
-      expiry: form.expiry,
     })
-    router.push('/organizationLicense')
+    router.push('/roles')
   } catch (err: any) {
     console.error(err)
-    serverError.value = err.message || 'Gagal update data.'
+    serverError.value = err.message || 'Gagal update role'
   } finally {
     saving.value = false
   }
@@ -93,9 +81,9 @@ const updateData = async () => {
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold" style="color: var(--ui-text-highlighted);">
-        Edit Organization License
+        Edit Role
       </h1>
-      <UButton to="/organizationLicense" icon="i-heroicons-arrow-left" color="gray" variant="soft" label="Back" />
+      <UButton to="/roles" icon="i-heroicons-arrow-left" color="gray" variant="soft" label="Back" />
     </div>
 
     <!-- Loading -->
@@ -104,58 +92,35 @@ const updateData = async () => {
     <!-- Form -->
     <UCard v-else :ui="{ body: { padding: 'p-6' } }">
       <form @submit.prevent="updateData" class="space-y-6">
-        <!-- Organization Select -->
+        <!-- Role Name -->
+        <div>
+          <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
+            Role Name
+          </label>
+          <input
+            v-model="form.name"
+            type="text"
+            placeholder="Masukkan nama role"
+            class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
+            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
+          />
+        </div>
+
+        <!-- Organization Dropdown -->
         <div>
           <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
             Organization
           </label>
-          <select v-model.number="form.organization_id" class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);">
+          <select
+            v-model.number="form.organization_id"
+            class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
+            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
+          >
             <option value="" disabled>Pilih Organization</option>
             <option v-for="org in organizations" :key="org.id" :value="org.id">
               {{ org.name }}
             </option>
           </select>
-        </div>
-
-        <!-- License Select -->
-        <div>
-          <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
-            License
-          </label>
-          <select v-model.number="form.license_id" class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);">
-            <option value="" disabled>Pilih License</option>
-            <option v-for="l in licenses" :key="l.id" :value="l.id">
-              {{ l.name }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Max Member -->
-        <div>
-          <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
-            Max Member
-          </label>
-          <input v-model.number="form.max_member" type="number" min="1" placeholder="Masukkan batas anggota"
-            class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);" />
-        </div>
-
-        <!-- Active Checkbox -->
-        <div class="flex items-center gap-2">
-          <input v-model="form.is_active" type="checkbox" class="w-4 h-4" />
-          <span class="text-sm">Active License</span>
-        </div>
-
-        <!-- Expiry -->
-        <div>
-          <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
-            Expiry Date
-          </label>
-          <input v-model="form.expiry" type="datetime-local"
-            class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);" />
         </div>
 
         <!-- Error -->
@@ -169,24 +134,16 @@ const updateData = async () => {
           <UButton type="submit" :loading="saving" :disabled="saving" color="primary" icon="i-heroicons-check-circle"
             :label="saving ? 'Updating...' : 'Update'" />
           <UButton color="gray" variant="soft" icon="i-heroicons-x-mark" label="Cancel"
-            @click="router.push('/organizationLicense')" />
+            @click="router.push('/roles')" />
         </div>
       </form>
-    </UCard>
-
-    <!-- Info Card -->
-    <UCard class="mt-6" :ui="{ body: { padding: 'p-4' } }">
-      <p class="text-sm" style="color: var(--ui-text-dimmed);">
-        <strong>Note:</strong> Pastikan memilih organisasi & license yang benar, dan atur tanggal kedaluwarsa dengan
-        tepat.
-      </p>
     </UCard>
   </div>
 </template>
 
 <style scoped>
-select:focus,
-input:focus {
+input:focus,
+select:focus {
   outline: none;
   border-color: var(--ui-primary);
 }

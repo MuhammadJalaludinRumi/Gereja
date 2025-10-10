@@ -104,13 +104,7 @@ const save = async () => {
       <h1 class="text-2xl font-bold" style="color: var(--ui-text-highlighted);">
         Buat Organization Baru
       </h1>
-      <UButton
-        to="/organizations"
-        icon="i-heroicons-arrow-left"
-        color="gray"
-        variant="soft"
-        label="Back"
-      />
+      <UButton to="/organizations" icon="i-heroicons-arrow-left" color="gray" variant="soft" label="Back" />
     </div>
 
     <!-- Loading -->
@@ -125,27 +119,18 @@ const save = async () => {
             <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
               Name <span class="text-red-500">*</span>
             </label>
-            <input
-              v-model="form.name"
-              type="text"
-              required
-              placeholder="Masukkan nama organization"
+            <input v-model="form.name" type="text" required placeholder="Masukkan nama organization"
               class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-            />
+              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);" />
           </div>
 
           <div>
             <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
               Abbreviation
             </label>
-            <input
-              v-model="form.abbreviation"
-              type="text"
-              placeholder="Singkatan"
+            <input v-model="form.abbreviation" type="text" placeholder="Singkatan"
               class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-            />
+              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);" />
           </div>
         </div>
 
@@ -154,13 +139,9 @@ const save = async () => {
           <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
             Address
           </label>
-          <textarea
-            v-model="form.address"
-            placeholder="Masukkan alamat"
-            rows="3"
+          <textarea v-model="form.address" placeholder="Masukkan alamat" rows="3"
             class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-          ></textarea>
+            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"></textarea>
         </div>
 
         <!-- City -->
@@ -168,17 +149,10 @@ const save = async () => {
           <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
             City
           </label>
-          <select
-            v-model="form.city"
-            class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-          >
+          <select v-model="form.city" class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
+            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);">
             <option value="" disabled>Pilih Kota</option>
-            <option
-              v-for="city in cities"
-              :key="city.id"
-              :value="city.id"
-            >
+            <option v-for="city in cities" :key="city.id" :value="city.id">
               {{ city.name }}
             </option>
           </select>
@@ -193,28 +167,18 @@ const save = async () => {
             <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
               Latitude
             </label>
-            <input
-              v-model.number="form.latitude"
-              type="number"
-              step="any"
-              placeholder="-6.200000"
+            <input v-model.number="form.latitude" type="number" step="any" placeholder="-6.200000"
               class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-            />
+              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);" />
           </div>
 
           <div>
             <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
               Longitude
             </label>
-            <input
-              v-model.number="form.longitude"
-              type="number"
-              step="any"
-              placeholder="106.816666"
+            <input v-model.number="form.longitude" type="number" step="any" placeholder="106.816666"
               class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-            />
+              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);" />
           </div>
         </div>
 
@@ -224,26 +188,18 @@ const save = async () => {
             <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
               Phone
             </label>
-            <input
-              v-model="form.phone"
-              type="tel"
-              placeholder="08123456789"
+            <input v-model="form.phone" type="tel" placeholder="08123456789"
               class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-            />
+              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);" />
           </div>
 
           <div>
             <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
               Email
             </label>
-            <input
-              v-model="form.email"
-              type="email"
-              placeholder="email@example.com"
+            <input v-model="form.email" type="email" placeholder="email@example.com"
               class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-            />
+              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);" />
           </div>
         </div>
 
@@ -252,17 +208,10 @@ const save = async () => {
           <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
             Yayasan
           </label>
-          <select
-            v-model="form.group_id"
-            class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-          >
+          <select v-model="form.group_id" class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
+            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);">
             <option value="" disabled>Pilih Yayasan</option>
-            <option
-              v-for="group in groups"
-              :key="group.id"
-              :value="group.id"
-            >
+            <option v-for="group in groups" :key="group.id" :value="group.id">
               {{ group.name }}
             </option>
           </select>
@@ -276,13 +225,9 @@ const save = async () => {
           <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
             Website
           </label>
-          <input
-            v-model="form.website"
-            type="text"
-            placeholder="https://example.com"
+          <input v-model="form.website" type="text" placeholder="https://example.com"
             class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-          />
+            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);" />
         </div>
 
         <!-- Logo Upload -->
@@ -290,21 +235,13 @@ const save = async () => {
           <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
             Logo
           </label>
-          <input
-            type="file"
-            accept="image/*"
-            @change="onFileChange"
+          <input type="file" accept="image/*" @change="onFileChange"
             class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-          />
+            style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);" />
           <!-- Preview -->
           <div v-if="logoPreview" class="mt-3">
-            <img
-              :src="logoPreview"
-              alt="Logo Preview"
-              class="h-20 w-auto rounded border"
-              style="border-color: var(--ui-border);"
-            />
+            <img :src="logoPreview" alt="Logo Preview" class="h-20 w-auto rounded border"
+              style="border-color: var(--ui-border);" />
           </div>
         </div>
 
@@ -314,54 +251,32 @@ const save = async () => {
             <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
               Founded Date
             </label>
-            <input
-              v-model="form.founded"
-              type="date"
-              class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-            />
+            <input v-model="form.founded" type="date" class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
+              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);" />
           </div>
 
           <div>
             <label class="block mb-2 text-sm font-semibold" style="color: var(--ui-text-highlighted);">
               Legal
             </label>
-            <input
-              v-model="form.legal"
-              type="text"
-              placeholder="Legal entity"
+            <input v-model="form.legal" type="text" placeholder="Legal entity"
               class="w-full px-3 py-2 text-sm rounded-lg transition-colors"
-              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);"
-            />
+              style="background: var(--ui-bg); border: 1px solid var(--ui-border); color: var(--ui-text);" />
           </div>
         </div>
 
         <!-- Error Alert -->
-        <div
-          v-if="serverError"
-          class="px-4 py-3 rounded-lg text-sm"
-          style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444;"
-        >
+        <div v-if="serverError" class="px-4 py-3 rounded-lg text-sm"
+          style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444;">
           {{ serverError }}
         </div>
 
         <!-- Action Buttons -->
         <div class="flex items-center gap-3 pt-2">
-          <UButton
-            type="submit"
-            :loading="saving"
-            :disabled="saving"
-            color="primary"
-            icon="i-heroicons-check-circle"
-            :label="saving ? 'Saving...' : 'Save Organization'"
-          />
-          <UButton
-            color="gray"
-            variant="soft"
-            icon="i-heroicons-x-mark"
-            label="Cancel"
-            @click="router.push('/organizations')"
-          />
+          <UButton type="submit" :loading="saving" :disabled="saving" color="primary" icon="i-heroicons-check-circle"
+            :label="saving ? 'Saving...' : 'Save Organization'" />
+          <UButton color="gray" variant="soft" icon="i-heroicons-x-mark" label="Cancel"
+            @click="router.push('/organizations')" />
         </div>
       </form>
     </UCard>
@@ -372,7 +287,8 @@ const save = async () => {
         <span class="text-blue-400 text-lg">ℹ️</span>
         <div class="text-sm" style="color: var(--ui-text-dimmed);">
           <p class="font-semibold mb-1" style="color: var(--ui-text);">Note:</p>
-          <p>Field yang ditandai dengan <span class="text-red-500">*</span> wajib diisi. Logo akan di-upload otomatis saat form disimpan.</p>
+          <p>Field yang ditandai dengan <span class="text-red-500">*</span> wajib diisi. Logo akan di-upload otomatis
+            saat form disimpan.</p>
         </div>
       </div>
     </UCard>

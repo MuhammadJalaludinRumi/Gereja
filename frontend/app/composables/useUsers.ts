@@ -14,8 +14,12 @@ export function useUsers() {
   const api = useRuntimeConfig().public.apiBase
 
   const fetchUsers = async () => {
-    const { data } = await useFetch<User[]>(`${api}/users`)
-    if (data.value) users.value = data.value
+    try {
+      const { data } = await useFetch<User[]>(`${api}/users`, { credentials: 'include' })
+      if (data.value) users.value = data.value
+    } catch (err) {
+      console.error('Gagal fetch users', err)
+    }
   }
 
   const createUser = async (payload: User) => {
@@ -27,11 +31,16 @@ export function useUsers() {
   }
 
   const updateUser = async (id: number, payload: Partial<User>) => {
-    await $fetch(`${api}/users/${id}`, {
-      method: 'PUT',
-      body: payload
-    })
-    await fetchUsers()
+    try {
+      await $fetch(`${api}/users/${id}`, {
+        method: 'PUT',
+        body: payload,
+        credentials: 'include' // penting buat Sanctum / cookie auth
+      })
+      await fetchUsers() // refresh data setelah update
+    } catch (err) {
+      console.error('Gagal update user:', err)
+    }
   }
 
   const deleteUser = async (id: number) => {
