@@ -3,6 +3,8 @@
 use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\GroupController;
@@ -21,7 +23,17 @@ use App\Http\Controllers\AclController;
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout']);
 Route::middleware('auth:sanctum')->group(function () {
-    // route buat cek user & auth status
+
+    Route::get('/debug-session', function (\Illuminate\Http\Request $request) {
+        $request->session()->put('test', 'works');
+        return [
+            'session_stored' => $request->session()->get('test'),
+            'cookies_sent' => $request->cookies->all(),
+            'auth_check' => Auth::check(),
+            'user' => $request->user(),
+        ];
+    });
+
     Route::get('/me', function (Request $request) {
         try {
             return response()->json([

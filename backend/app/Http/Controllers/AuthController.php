@@ -1,56 +1,65 @@
 <?php
-// app/Http/Controllers/AuthController.php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
     public function login(Request $request)
     {
         try {
+            // 1️⃣ Validasi input
             $request->validate([
-                'username' => 'required|string',
-                'password' => 'required|string',
+                'username' => 'required',
+                'password' => 'required',
             ]);
 
-            $user = User::where('username', $request->username)->first();
+            // 2️⃣ Siapkan credentials
+            $credentials = [
+                'username' => $request->username,
+                'password' => $request->password,
+            ];
 
-            if (!$user) {
-                return response()->json(['message' => 'Username tidak ditemukan'], 401);
+            // 3️⃣ Attempt pakai guard web
+            if (!Auth::guard('web')->attempt($credentials)) {
+                return response()->json(['message' => 'Invalid credentials'], 401);
             }
 
-            if (!Hash::check($request->password, $user->password)) {
-                return response()->json(['message' => 'Password salah'], 401);
-            }
+            // 4️⃣ Ambil user
+            $user = Auth::guard('web')->user();
 
-            if ($user->is_active != 1) {
-                return response()->json(['message' => 'Akun diblokir atau tidak aktif'], 401);
-            }
+            // 5️⃣ Hapus token lama
+            $user->tokens()->delete();
 
-            $user->update(['last_login' => now()]);
+            // 6️⃣ Generate token baru
+            $token = $user->createToken('auth_token')->plainTextToken;
 
-            $token = $user->createToken('auth-token')->plainTextToken;
+            // 7️⃣ Update last_login
+            $user->last_login = now();
+            $user->save();
 
+            // 8️⃣ Return response
             return response()->json([
-                'token' => $token,
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'username' => $user->username,
-                    'role_id' => $user->role_id,
-                    'is_active' => $user->is_active,
+                'message'    => 'Login successful',
+                'user'       => [
+                    'id'         => $user->id,
+                    'name'       => $user->name,
+                    'username'   => $user->username,
+                    'role_id'    => $user->role_id,
+                    'is_active'  => $user->is_active,
                     'last_login' => $user->last_login,
-                ]
+                ],
+                'token' => $token,
             ]);
+
         } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+            return response()->json([
+                'message' => 'Login Error: '.$e->getMessage(),
+            ], 500);
         }
     }
-
 
     public function logout(Request $request)
     {
