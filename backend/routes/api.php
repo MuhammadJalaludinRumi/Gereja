@@ -40,42 +40,43 @@ Route::middleware('auth:sanctum')->group(function () {
     // 🔥 route profile user
     Route::get('/user/profile', [UserController::class, 'profile']);
     Route::put('/user/profile', [UserController::class, 'updateProfile']);
+
+    //Route Users
+    Route::apiResource('users', UserController::class);
+
+    //Route Roles
+    Route::apiResource('roles', RoleController::class);
+
+    //Route Groups
+    Route::apiResource('groups', GroupController::class);
+
+    //Route Organizations
+    Route::apiResource('organizations', OrganizationController::class);
+
+    //Route Province
+    Route::apiResource('province', ProvinceController::class);
+
+    //Route City
+    Route::apiResource('city', CityController::class);
+
+    //Route Organization License
+    Route::apiResource('organization-licenses', OrganizationLicenseController::class);
+
+    //Route Invoice
+    Route::apiResource('invoices', InvoiceController::class);
+
+    //Route News
+    Route::apiResource('news', NewsController::class);
+
+    // Licenses
+    Route::apiResource('licenses', LicenseController::class);
+
+    // Rules
+    Route::apiResource('rules', RuleController::class);
+
+    // User-Authorty
+    Route::apiResource('user-authorities', UserAuthorityController::class);
+
+    // Acls
+    Route::apiResource('acls', AclController::class);
 });
-//Route Users
-Route::apiResource('users', UserController::class);
-
-//Route Roles
-Route::apiResource('roles', RoleController::class);
-
-//Route Groups
-Route::apiResource('groups', GroupController::class);
-
-//Route Organizations
-Route::apiResource('organizations', OrganizationController::class);
-
-//Route Province
-Route::apiResource('province', ProvinceController::class);
-
-//Route City
-Route::apiResource('city', CityController::class);
-
-//Route Organization License
-Route::apiResource('organization-licenses', OrganizationLicenseController::class);
-
-//Route Invoice
-Route::apiResource('invoices', InvoiceController::class);
-
-//Route News
-Route::apiResource('news', NewsController::class);
-
-// Licenses
-Route::apiResource('licenses', LicenseController::class);
-
-// Rules
-Route::apiResource('rules', RuleController::class);
-
-// User-Authorty
-Route::apiResource('user-authorities', UserAuthorityController::class);
-
-// Acls
-Route::apiResource('acls', AclController::class);
