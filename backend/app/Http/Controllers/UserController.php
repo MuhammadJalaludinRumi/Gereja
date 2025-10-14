@@ -10,7 +10,9 @@ class UserController extends Controller
 {
     public function index()
     {
-        return response()->json(User::all());
+        // Ambil semua user beserta relasi role-nya
+        $users = User::with('role')->get();
+        return response()->json($users);
     }
 
     public function store(Request $request)
@@ -20,18 +22,19 @@ class UserController extends Controller
             'password' => 'required|string|min:6',
             'name' => 'required|string',
             'is_active' => 'required|boolean',
-            'role_id' => 'required|integer',
+            'role_id' => 'required|integer|exists:roles,id',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
-        $user = User::create($validated);
+        $user = User::create($validated)->load('role'); // langsung include relasi
 
         return response()->json($user, 201);
     }
 
     public function show($id)
     {
-        return response()->json(User::findOrFail($id));
+        $user = User::with('role')->findOrFail($id);
+        return response()->json($user);
     }
 
     public function update(Request $request, $id)
@@ -43,16 +46,16 @@ class UserController extends Controller
             'password' => 'nullable|string|min:6',
             'name' => 'sometimes|string',
             'is_active' => 'sometimes|boolean',
-            'role_id' => 'sometimes|integer',
+            'role_id' => 'sometimes|integer|exists:roles,id',
         ]);
 
-        if (isset($validated['password'])) {
+        if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
         }
 
         $user->update($validated);
 
-        return response()->json($user);
+        return response()->json($user->load('role'));
     }
 
     public function destroy($id)
@@ -63,14 +66,14 @@ class UserController extends Controller
         return response()->json(['message' => 'User deleted']);
     }
 
-        public function profile(Request $request)
+    public function profile(Request $request)
     {
-        return response()->json($request->user()); // auto dari token
+        return response()->json($request->user()->load('role'));
     }
 
     public function updateProfile(Request $request)
     {
-        $user = $request->user(); // langsung dapet user dari token
+        $user = $request->user();
 
         $validated = $request->validate([
             'username' => 'required|string|max:255|unique:users,username,' . $user->id,
@@ -85,7 +88,8 @@ class UserController extends Controller
         $user->save();
 
         return response()->json([
-            'message' => 'Profile updated successfully'
+            'message' => 'Profile updated successfully',
+            'user' => $user->load('role')
         ]);
     }
 }
