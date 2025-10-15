@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Cookie;
 
 class AuthController extends Controller
 {
@@ -35,6 +37,24 @@ class AuthController extends Controller
 
             $token = $user->createToken('auth-token')->plainTextToken;
 
+            $isProd = Config::get('app.env') === 'production';
+
+            // Kalo prod, kirim token di cookie Secure & HttpOnly
+            if ($isProd) {
+                $cookie = cookie('token', $token, 60*24*7, '/', null, true, true); // 7 hari
+                return response()->json([
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'username' => $user->username,
+                        'role_id' => $user->role_id,
+                        'is_active' => $user->is_active,
+                        'last_login' => $user->last_login,
+                    ]
+                ])->cookie($cookie);
+            }
+
+            // Kalo dev, tetap pake bearer token
             return response()->json([
                 'token' => $token,
                 'user' => [
@@ -51,10 +71,18 @@ class AuthController extends Controller
         }
     }
 
-
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
-        return response()->json(['message' => 'Logged out successfully']);
+
+        $isProd = Config::get('app.env') === 'production';
+        $response = response()->json(['message' => 'Logged out successfully']);
+
+        // Hapus cookie kalo prod
+        if ($isProd) {
+            $response->withCookie(Cookie::forget('token'));
+        }
+
+        return $response;
     }
 }
