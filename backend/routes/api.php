@@ -18,8 +18,11 @@ use App\Http\Controllers\UserAuthorityController;
 use App\Http\Controllers\AclController;
 
 //Route Auth
-Route::post('/login', [AuthController::class, 'login'])->name('login');
-Route::post('/logout', [AuthController::class, 'logout']);
+Route::middleware('web')->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+});
+
 Route::middleware('auth:sanctum')->group(function () {
     // route buat cek user & auth status
     Route::get('/me', function (Request $request) {
