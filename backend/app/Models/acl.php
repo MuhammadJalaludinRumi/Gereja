@@ -15,11 +15,10 @@ class Acl extends Model
         'name',
     ];
 
-    // Primary key
     protected $primaryKey = 'id';
     public $incrementing = true;
     protected $keyType = 'int';
 
-    // Tidak ada timestamps (karena tabel tidak punya created_at & updated_at)
     public $timestamps = false;
 }
+//
