@@ -18,7 +18,7 @@ use App\Http\Controllers\UserAuthorityController;
 use App\Http\Controllers\AclController;
 
 //Route Auth
-Route::middleware('web')->group(function () {
+Route::middleware('web', 'auth:sanctum')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
