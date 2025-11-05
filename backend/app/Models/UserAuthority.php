@@ -28,4 +28,11 @@ class UserAuthority extends Model
     {
         return $this->belongsTo(Role::class, 'role_id');
     }
+
+    public function syncUserRole()
+    {
+        if ($this->user) {
+            $this->user->update(['role_id' => $this->role_id]);
+        }
+    }
 }

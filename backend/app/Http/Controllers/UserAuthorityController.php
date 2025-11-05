@@ -3,70 +3,93 @@
 namespace App\Http\Controllers;
 
 use App\Models\UserAuthority;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class UserAuthorityController extends Controller
 {
     public function index()
     {
-        $userAuthority = UserAuthority::with(['user', 'role'])->get();
-        return response()->json($userAuthority);
+        $authorities = UserAuthority::with(['user', 'role'])->get();
+        return response()->json($authorities);
     }
 
-    // GET /api/user-authorities/{id}
     public function show($id)
     {
-        $userAuthority = UserAuthority::find($id);
+        $authority = UserAuthority::with(['user', 'role'])->find($id);
 
-        if (!$userAuthority) {
+        if (!$authority) {
             return response()->json(['message' => 'User Authority not found'], 404);
         }
 
-        return response()->json($userAuthority);
+        return response()->json($authority);
     }
 
-    // POST /api/user-authorities
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'user_id' => 'required|integer',
-            'role_id' => 'required|integer',
+            'user_id' => 'required|integer|exists:users,id',
+            'role_id' => 'required|integer|exists:roles,id',
         ]);
 
-        $userAuthority = UserAuthority::create($validated);
+        // Buat record authority
+        $authority = UserAuthority::create($validated);
 
-        return response()->json($userAuthority, 201);
+        // Sinkronin role_id di tabel users
+        $user = User::find($validated['user_id']);
+        if ($user) {
+            $user->update(['role_id' => $validated['role_id']]);
+        }
+
+        return response()->json([
+            'message' => 'User Authority created successfully',
+            'data' => $authority->load(['user', 'role'])
+        ], 201);
     }
 
-    // PUT /api/user-authorities/{id}
     public function update(Request $request, $id)
     {
-        $userAuthority = UserAuthority::find($id);
+        $authority = UserAuthority::find($id);
 
-        if (!$userAuthority) {
+        if (!$authority) {
             return response()->json(['message' => 'User Authority not found'], 404);
         }
 
         $validated = $request->validate([
-            'user_id' => 'required|integer',
-            'role_id' => 'required|integer',
+            'user_id' => 'required|integer|exists:users,id',
+            'role_id' => 'required|integer|exists:roles,id',
         ]);
 
-        $userAuthority->update($validated);
+        // Update authority
+        $authority->update($validated);
 
-        return response()->json($userAuthority);
+        // Sinkronin role_id di tabel users
+        $user = User::find($validated['user_id']);
+        if ($user) {
+            $user->update(['role_id' => $validated['role_id']]);
+        }
+
+        return response()->json([
+            'message' => 'User Authority updated successfully',
+            'data' => $authority->load(['user', 'role'])
+        ]);
     }
 
-    // DELETE /api/user-authorities/{id}
     public function destroy($id)
     {
-        $userAuthority = UserAuthority::find($id);
+        $authority = UserAuthority::find($id);
 
-        if (!$userAuthority) {
+        if (!$authority) {
             return response()->json(['message' => 'User Authority not found'], 404);
         }
 
-        $userAuthority->delete();
+        // Optional: reset role_id user jadi null biar konsisten
+        $user = User::find($authority->user_id);
+        if ($user) {
+            $user->update(['role_id' => null]);
+        }
+
+        $authority->delete();
 
         return response()->json(['message' => 'User Authority deleted successfully']);
     }
