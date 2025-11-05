@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\UserAuthority;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -26,15 +27,15 @@ class UserController extends Controller
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
-        $user = User::create($validated)->load('role'); // langsung include relasi
+
+        $user = User::create($validated)->load('role');
+
+        UserAuthority::create([
+            'user_id' => $user->id,
+            'role_id' => $validated['role_id'],
+        ]);
 
         return response()->json($user, 201);
-    }
-
-    public function show($id)
-    {
-        $user = User::with('role')->findOrFail($id);
-        return response()->json($user);
     }
 
     public function update(Request $request, $id)
@@ -55,7 +56,20 @@ class UserController extends Controller
 
         $user->update($validated);
 
+        if (isset($validated['role_id'])) {
+            UserAuthority::updateOrCreate(
+                ['user_id' => $user->id],
+                ['role_id' => $validated['role_id']]
+            );
+        }
+
         return response()->json($user->load('role'));
+    }
+
+    public function show($id)
+    {
+        $user = User::with('role')->findOrFail($id);
+        return response()->json($user);
     }
 
     public function destroy($id)
