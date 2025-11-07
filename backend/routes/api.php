@@ -16,6 +16,11 @@ use App\Http\Controllers\LicenseController;
 use App\Http\Controllers\RuleController;
 use App\Http\Controllers\UserAuthorityController;
 use App\Http\Controllers\AclController;
+use App\Http\Controllers\EconomyController;
+use App\Http\Controllers\MemberController;
+use App\Http\Controllers\MarriageController;
+use App\Http\Controllers\EducationController;
+use App\Http\Controllers\OccupationController;
 
 //Route Auth
 Route::post('/login', [AuthController::class, 'login'])->name('login');
@@ -80,5 +85,19 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Acls
     Route::apiResource('acls', AclController::class);
+
+    //Member
+    Route::apiResource('members', MemberController::class);
+
+    //Marriage
+    Route::apiResource('marriages', MarriageController::class);
+
+    //Route Educations
+    Route::apiResource('educations', EducationController::class);
+
+    //Route Occupations
+    Route::apiResource('occupations', OccupationController::class);
+
+    //Route Economy
+    Route::apiResource('economies', EconomyController::class);
 });
-//
