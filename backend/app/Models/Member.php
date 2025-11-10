@@ -11,9 +11,7 @@ class Member extends Model
 
     protected $table = 'members';
 
-    /**
-     * Karena tabel tidak memiliki kolom created_at & updated_at
-     */
+    // kalau tabel emang nggak pake created_at/updated_at
     public $timestamps = false;
 
     protected $fillable = [
@@ -29,7 +27,7 @@ class Member extends Model
         'phone',
         'email',
         'address',
-        'city',
+        'city',         // tetep pake "city"
         'latitude',
         'longitude',
         'photo',
@@ -52,7 +50,24 @@ class Member extends Model
         'attest_origin'
     ];
 
-    // relasi ke city
+    protected $casts = [
+        'dob' => 'datetime',
+        'baptist_date' => 'datetime',
+        'consecrate_date' => 'datetime',
+        'attest_date' => 'datetime',
+        'is_deceased' => 'boolean',
+        'is_active' => 'boolean',
+        'latitude' => 'float',
+        'longitude' => 'float',
+    ];
+
+    /**
+     * RELATION ke City.
+     * Nama method = "city" supaya konsisten dengan OrganizationController
+     * dan supaya frontend tetap bisa minta eager load with('city').
+     *
+     * Field FK di DB tetap bernama `city` (integer).
+     */
     public function city()
     {
         return $this->belongsTo(City::class, 'city');
