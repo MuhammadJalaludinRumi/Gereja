@@ -10,6 +10,7 @@ class MemberController extends Controller
 {
     public function index()
     {
+        // eager load same as OrganizationController
         $members = Member::with('city')
             ->orderBy('name', 'asc')
             ->paginate(50);
@@ -19,7 +20,7 @@ class MemberController extends Controller
 
     public function show($id)
     {
-        return Member::with('city')->findOrFail($id);
+        return response()->json(Member::with('city')->findOrFail($id));
     }
 
     public function store(Request $request)
@@ -37,7 +38,7 @@ class MemberController extends Controller
             'phone' => 'nullable|string',
             'email' => 'nullable|email',
             'address' => 'nullable|string',
-            'city_id' => 'nullable|integer|exists:cities,id',
+            'city' => 'nullable|integer|exists:cities,id', // tetap 'city'
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
             'photo' => 'nullable|image|max:2048',
@@ -67,7 +68,10 @@ class MemberController extends Controller
 
         $member = Member::create($data);
 
-        return response()->json($member->load('city'), 201);
+        // load relasi untuk response
+        $member->load('city');
+
+        return response()->json($member, 201);
     }
 
     public function update(Request $request, $id)
@@ -87,7 +91,7 @@ class MemberController extends Controller
             'phone' => 'nullable|string',
             'email' => 'nullable|email',
             'address' => 'nullable|string',
-            'city_id' => 'nullable|integer|exists:cities,id',
+            'city' => 'nullable|integer|exists:cities,id',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
             'photo' => 'nullable|image|max:2048',
@@ -116,13 +120,14 @@ class MemberController extends Controller
         }
 
         $member->update($data);
+        $member->load('city');
 
-        return response()->json($member->load('city'));
+        return response()->json($member);
     }
 
     public function destroy($id)
     {
         Member::findOrFail($id)->delete();
-        return response()->json(['message' => 'deleted cuy']);
+        return response()->json(['message' => 'deleted']);
     }
 }
