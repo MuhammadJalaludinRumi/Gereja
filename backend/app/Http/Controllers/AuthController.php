@@ -45,7 +45,6 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             return response()->json([
-                'token' => $token,
                 'user' => $user
             ]);
         } else {
