@@ -19,6 +19,11 @@ class AuthController extends Controller
 
         $user = User::where('username', $request->username)->first();
 
+        $user->load([
+            'role',
+            'role.organization'
+        ]);
+
         if (!$user) {
             return response()->json(['message' => 'Username tidak ditemukan'], 401);
         }
@@ -40,14 +45,8 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             return response()->json([
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'username' => $user->username,
-                    'role_id' => $user->role_id,
-                    'is_active' => $user->is_active,
-                    'last_login' => $user->last_login,
-                ]
+                'token' => $token,
+                'user' => $user
             ]);
         } else {
             // Dev/local: pake token supaya frontend gampang
@@ -55,14 +54,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'token' => $token,
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'username' => $user->username,
-                    'role_id' => $user->role_id,
-                    'is_active' => $user->is_active,
-                    'last_login' => $user->last_login,
-                ]
+                'user' => $user
             ]);
         }
     }
