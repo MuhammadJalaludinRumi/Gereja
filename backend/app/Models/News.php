@@ -14,7 +14,8 @@ class News extends Model
         'content',
         'thumbnail',
         'image',
-        'status'
+        'status',
+        'show_on_login'
     ];
 
     public $timestamps = false;

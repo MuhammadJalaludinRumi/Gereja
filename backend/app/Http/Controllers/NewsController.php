@@ -41,11 +41,20 @@ class NewsController extends Controller
             'content' => 'sometimes|string',
             'thumbnail' => 'sometimes|string|max:255',
             'image' => 'sometimes|string|max:255',
-            'status' => 'sometimes|boolean'
+            'status' => 'sometimes|boolean',
+            'show_on_login' => 'sometimes|boolean'
         ]);
 
         $news->update($data);
         return response()->json($news);
+    }
+
+    public function newsForLogin()
+    {
+        return News::where('status', 1)
+            ->where('show_on_login', 1)
+            ->orderBy('date_post', 'desc')
+            ->first();
     }
 
     public function destroy($id)
