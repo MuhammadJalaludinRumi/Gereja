@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Models\EconomyHistory;
 
 use App\Models\Economy;
 use Illuminate\Http\Request;
@@ -40,6 +41,20 @@ class EconomyController extends Controller
             'update' => 'required|date',
             'class' => 'required|string|max:255'
         ]);
+
+        if ($economy->class !== $request->class) {
+            EconomyHistory::create([
+                'economy_id' => $economy->id,
+                'old_class'  => $economy->class,
+                'new_class'  => $request->class,
+                'updated_by' => auth()->user()->name ?? 'Unknown'
+            ]);
+        }
+
+        // Update data economy
+        $economy->update($request->all());
+
+        return response()->json(['message' => 'updated']);
 
         $economy->update($data);
         return response()->json($economy);

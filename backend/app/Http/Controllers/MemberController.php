@@ -8,19 +8,40 @@ use Illuminate\Support\Facades\Storage;
 
 class MemberController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // eager load same as OrganizationController
-        $members = Member::with('city')
+        $query = Member::with('city');
+
+        // FILTER BY FAMILY ID (KK)
+        if ($request->has('family_id') && $request->family_id !== '') {
+            $query->where('family_id', $request->family_id);
+
+            // kalau filter KK, return semua tanpa paginate
+            return response()->json([
+                'success' => true,
+                'data' => $query->orderBy('name', 'asc')->get()
+            ]);
+        }
+
+        // default paginate
+        $members = $query
             ->orderBy('name', 'asc')
             ->paginate(50);
 
         return response()->json($members);
     }
 
+    // opsional, boleh dipake atau dihapus karena sudah includ di index()
+    public function byKK($kk)
+    {
+        return Member::where("family_id", $kk)->get();
+    }
+
     public function show($id)
     {
-        return response()->json(Member::with('city')->findOrFail($id));
+        return response()->json(
+            Member::with('city')->findOrFail($id)
+        );
     }
 
     public function store(Request $request)
@@ -38,7 +59,7 @@ class MemberController extends Controller
             'phone' => 'nullable|string',
             'email' => 'nullable|email',
             'address' => 'nullable|string',
-            'city' => 'nullable|integer|exists:cities,id', // tetap 'city'
+            'city' => 'nullable|integer|exists:cities,id',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
             'photo' => 'nullable|image|max:2048',
@@ -68,7 +89,6 @@ class MemberController extends Controller
 
         $member = Member::create($data);
 
-        // load relasi untuk response
         $member->load('city');
 
         return response()->json($member, 201);
@@ -128,6 +148,7 @@ class MemberController extends Controller
     public function destroy($id)
     {
         Member::findOrFail($id)->delete();
+
         return response()->json(['message' => 'deleted']);
     }
 }
