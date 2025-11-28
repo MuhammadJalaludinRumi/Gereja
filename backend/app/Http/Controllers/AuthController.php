@@ -19,14 +19,15 @@ class AuthController extends Controller
 
         $user = User::where('username', $request->username)->first();
 
+        if (!$user) {
+            return response()->json(['message' => 'Username tidak ditemukan'], 401);
+        }
+
         $user->load([
             'role',
             'role.organization'
         ]);
 
-        if (!$user) {
-            return response()->json(['message' => 'Username tidak ditemukan'], 401);
-        }
 
         if (!Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Password salah'], 401);
