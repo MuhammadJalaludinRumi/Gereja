@@ -10,4 +10,9 @@ class City extends Model
     protected $fillable = ['name', 'province'];
 
     public $timestamps = false;
+
+    public function provinceRelation()
+    {
+        return $this->belongsTo(Province::class, 'province');
+    }
 }
