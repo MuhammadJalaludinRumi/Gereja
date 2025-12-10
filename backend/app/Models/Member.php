@@ -27,7 +27,7 @@ class Member extends Model
         'phone',
         'email',
         'address',
-        'city',         // tetep pake "city"
+        'city',
         'latitude',
         'longitude',
         'photo',
@@ -47,7 +47,8 @@ class Member extends Model
         'consecrate_host_id',
         'consecrate_host_name',
         'attest_date',
-        'attest_origin'
+        'attest_origin',
+        'family_group_id',
     ];
 
     protected $casts = [

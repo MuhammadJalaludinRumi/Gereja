@@ -19,44 +19,56 @@ class AuthController extends Controller
 
         $user = User::where('username', $request->username)->first();
 
+        // Username tidak ditemukan
         if (!$user) {
-            return response()->json(['message' => 'Username tidak ditemukan'], 401);
+            return response()->json([
+                'status' => false,
+                'message' => 'Username tidak ditemukan.'
+            ], 401);
         }
 
-        $user->load([
-            'role',
-            'role.organization'
-        ]);
+        $user->load(['role', 'role.organization']);
 
-
+        // Password salah
         if (!Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Password salah'], 401);
+            return response()->json([
+                'status' => false,
+                'message' => 'Password salah.'
+            ], 401);
         }
 
+        // Akun nonaktif
         if ($user->is_active != 1) {
-            return response()->json(['message' => 'Akun diblokir atau tidak aktif'], 401);
+            return response()->json([
+                'status' => false,
+                'message' => 'Akun diblokir atau tidak aktif.'
+            ], 403);
         }
 
+        // Update last login
         $user->update(['last_login' => now()]);
 
-        // Multi-env: prod pake session auth, local/dev pake token
+        // Production: session-based
         if (app()->environment('production')) {
-            // Prod: login pake session + cookie
             Auth::guard('web')->login($user);
             $request->session()->regenerate();
 
             return response()->json([
+                'status' => true,
+                'message' => 'Login berhasil.',
                 'user' => $user
-            ]);
-        } else {
-            // Dev/local: pake token supaya frontend gampang
-            $token = $user->createToken('auth-token')->plainTextToken;
-
-            return response()->json([
-                'token' => $token,
-                'user' => $user
-            ]);
+            ], 200);
         }
+
+        // Dev/local: token-based
+        $token = $user->createToken('auth-token')->plainTextToken;
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Login berhasil.',
+            'token' => $token,
+            'user' => $user
+        ], 200);
     }
 
     public function logout(Request $request)
@@ -69,16 +81,21 @@ class AuthController extends Controller
             $request->user()?->currentAccessToken()?->delete();
         }
 
-        return response()->json(['message' => 'Logged out successfully']);
+        return response()->json(['status' => true, 'message' => 'Logout berhasil.']);
     }
 
-    // Opsional: endpoint /me
     public function me(Request $request)
     {
         $user = $request->user();
-        if (!$user) return response()->json(['message' => 'Unauthorized'], 401);
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Tidak terautentikasi.'
+            ], 200);
+        }
 
         return response()->json([
+            'status' => true,
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -87,6 +104,6 @@ class AuthController extends Controller
                 'is_active' => $user->is_active,
                 'last_login' => $user->last_login,
             ]
-        ]);
+        ], 200);
     }
 }

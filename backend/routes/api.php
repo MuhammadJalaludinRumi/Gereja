@@ -23,16 +23,22 @@ use App\Http\Controllers\MarriageController;
 use App\Http\Controllers\EducationController;
 use App\Http\Controllers\OccupationController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\FormulirController;
+use App\Http\Controllers\AuxiliaryPersonController;
+use App\Http\Controllers\KkLinkController;
+
+Route::apiResource('formulirs', FormulirController::class);
 
 //Route Auth
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::get('/news/login', [NewsController::class, 'newsForLogin']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-
+//
 Route::post('/users/send-otp', [ForgotPasswordController::class, 'sendOtp']);
 Route::post('/users/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);
 Route::post('/users/reset-password', [ForgotPasswordController::class, 'resetPassword']);
+
 
 Route::middleware('auth:sanctum')->group(function () {
     // route buat cek user & auth status
@@ -94,9 +100,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Acls
     Route::apiResource('acls', AclController::class);
 
-    //Member
-    Route::apiResource('members', MemberController::class);
-
     //KK
     Route::get("/members/by-kk/{kk}", [MemberController::class, "byKK"]);
 
@@ -114,4 +117,16 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/economy/{id}/history', [EconomyHistoryController::class, 'index']);
     Route::post('/economy/{id}/history', [EconomyHistoryController::class, 'index']);
+
+    // Auxiliary Persons
+    Route::apiResource('auxiliary-persons', AuxiliaryPersonController::class);
+    Route::get('/auxiliary-persons/by-member/{memberId}', [AuxiliaryPersonController::class, 'getByMember']);
+
+    Route::apiResource('kk-links', KkLinkController::class);
+    Route::get('/connected/{nokk}', [KkLinkController::class, 'getLinkedKKs']);
+    Route::get('/family/{nokk}', [KkLinkController::class, 'getFamilyMembers']);
+
+    Route::middleware('check.acl')->group(function () {
+        Route::resource('members', MemberController::class);
+    });
 });

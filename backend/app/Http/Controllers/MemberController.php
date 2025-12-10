@@ -80,6 +80,7 @@ class MemberController extends Controller
             'consecrate_host_name' => 'nullable|string',
             'attest_date' => 'nullable|date',
             'attest_origin' => 'nullable|string',
+            'family_group_int' => 'nullable|string',
         ]);
 
         if ($request->hasFile('photo')) {
@@ -114,7 +115,7 @@ class MemberController extends Controller
             'city' => 'nullable|integer|exists:cities,id',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
-            'photo' => 'nullable|image|max:2048',
+            'photo' => 'nullable|image|max:5012',
             'marriage' => 'nullable|string',
             'is_deceased' => 'boolean',
             'is_active' => 'boolean',
@@ -143,6 +144,27 @@ class MemberController extends Controller
         $member->load('city');
 
         return response()->json($member);
+    }
+
+    public function search(Request $request)
+    {
+        $nik = $request->nik;
+
+        $member = Member::where('id_number', $nik)
+                        ->orWhere('id_local', $nik)
+                        ->first();
+
+        if (!$member) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Member not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $member
+        ]);
     }
 
     public function destroy($id)
