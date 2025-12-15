@@ -26,6 +26,15 @@ use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\FormulirController;
 use App\Http\Controllers\AuxiliaryPersonController;
 use App\Http\Controllers\KkLinkController;
+use App\Http\Controllers\AssetController;
+use App\Http\Controllers\AssetCategoryController;
+use App\Http\Controllers\LocationController;
+use App\Http\Controllers\AssetImageController;
+use App\Http\Controllers\AssetLoanController;
+use App\Http\Controllers\AssetMaintenanceController;
+use App\Http\Controllers\AssetMovementController;
+use App\Http\Controllers\AssetDisposalController;
+use App\Http\Controllers\AssetDocumentController;
 
 Route::apiResource('formulirs', FormulirController::class);
 
@@ -125,6 +134,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('kk-links', KkLinkController::class);
     Route::get('/connected/{nokk}', [KkLinkController::class, 'getLinkedKKs']);
     Route::get('/family/{nokk}', [KkLinkController::class, 'getFamilyMembers']);
+
+    Route::apiResource('assets', AssetController::class);
+    Route::apiResource('asset-categories', AssetCategoryController::class);
+    Route::apiResource('locations', LocationController::class);
+    Route::apiResource('asset-images', AssetImageController::class);
+    Route::apiResource('asset-loans', AssetLoanController::class);
+    Route::apiResource('asset-maintenance', AssetMaintenanceController::class);
+    Route::apiResource('asset-movements', AssetMovementController::class);
+    Route::apiResource('asset-disposals', AssetDisposalController::class);
+    Route::apiResource('asset-documents', AssetDocumentController::class);
 
     Route::middleware('check.acl')->group(function () {
         Route::resource('members', MemberController::class);
