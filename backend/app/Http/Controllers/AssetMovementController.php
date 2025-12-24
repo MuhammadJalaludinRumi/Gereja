@@ -2,73 +2,96 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Asset;
 use App\Models\AssetMovement;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AssetMovementController extends Controller
 {
     // GET ALL
     public function index()
     {
-        $data = AssetMovement::with(['asset', 'fromLocation', 'toLocation', 'user'])->get();
-        return response()->json($data);
+        return AssetMovement::with([
+            'asset',
+            'fromLocation',
+            'toLocation',
+            'user'
+        ])->orderByDesc('moved_at')->get();
     }
 
-    // CREATE
+    // CREATE (PINDAH ASSET)
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'asset_id'          => 'required|exists:assets,id',
-            'from_location_id'  => 'required|exists:locations,id',
-            'to_location_id'    => 'required|exists:locations,id',
-            'moved_by'          => 'required|exists:users,id',
-            'moved_at'          => 'required|date',
-            'notes'             => 'nullable|string',
+            'asset_id'         => 'required|exists:assets,id',
+            'to_location_id'   => 'required|exists:locations,id',
+            'moved_at'         => 'required|date',
+            'notes'            => 'nullable|string',
         ]);
 
-        $movement = AssetMovement::create($validated);
+        $asset = Asset::with('disposal')->findOrFail($validated['asset_id']);
+
+        // 🚫 asset disposed gak boleh dipindahin
+        if ($asset->disposal) {
+            return response()->json([
+                'message' => 'Asset sudah disposed dan tidak bisa dipindahkan'
+            ], 422);
+        }
+
+        // 🚫 lokasi sama
+        if ($asset->location_id == $validated['to_location_id']) {
+            return response()->json([
+                'message' => 'Lokasi tujuan sama dengan lokasi sekarang'
+            ], 422);
+        }
+
+        DB::transaction(function () use ($asset, $validated) {
+            AssetMovement::create([
+                'asset_id'         => $asset->id,
+                'from_location_id' => $asset->location_id,
+                'to_location_id'   => $validated['to_location_id'],
+                'moved_by'         => Auth::id(),
+                'moved_at'         => $validated['moved_at'],
+                'notes'            => $validated['notes'] ?? null,
+            ]);
+
+            // 🔥 update lokasi asset
+            $asset->update([
+                'location_id' => $validated['to_location_id']
+            ]);
+        });
 
         return response()->json([
-            'message' => 'movement sukses kebuat bro',
-            'data' => $movement
-        ]);
+            'message' => 'Asset berhasil dipindahkan'
+        ], 201);
     }
 
     // GET DETAIL
     public function show($id)
     {
-        $data = AssetMovement::with(['asset', 'fromLocation', 'toLocation', 'user'])->findOrFail($id);
-        return response()->json($data);
+        return AssetMovement::with([
+            'asset',
+            'fromLocation',
+            'toLocation',
+            'user'
+        ])->findOrFail($id);
     }
 
-    // UPDATE
-    public function update(Request $request, $id)
+    // UPDATE ❌ (movement = history)
+    public function update()
     {
-        $movement = AssetMovement::findOrFail($id);
-
-        $validated = $request->validate([
-            'asset_id'          => 'sometimes|exists:assets,id',
-            'from_location_id'  => 'sometimes|exists:locations,id',
-            'to_location_id'    => 'sometimes|exists:locations,id',
-            'moved_by'          => 'sometimes|exists:users,id',
-            'moved_at'          => 'sometimes|date',
-            'notes'             => 'nullable|string',
-        ]);
-
-        $movement->update($validated);
-
         return response()->json([
-            'message' => 'movement udah diupdate cuy',
-            'data' => $movement
-        ]);
+            'message' => 'Movement tidak bisa diubah karena merupakan data history'
+        ], 405);
     }
 
-    // DELETE
-    public function destroy($id)
+    // DELETE ❌ (movement = history)
+    public function destroy()
     {
-        $movement = AssetMovement::findOrFail($id);
-        $movement->delete();
-
-        return response()->json(['message' => 'movement kehapus bro']);
+        return response()->json([
+            'message' => 'Movement tidak bisa dihapus karena merupakan data history'
+        ], 405);
     }
 }
