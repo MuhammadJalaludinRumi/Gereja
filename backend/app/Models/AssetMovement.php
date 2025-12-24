@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AssetMovement extends Model
 {
@@ -22,22 +23,26 @@ class AssetMovement extends Model
         'notes',
     ];
 
-    public function asset()
+    /* =======================
+     * RELATIONS
+     * ======================= */
+
+    public function asset(): BelongsTo
     {
         return $this->belongsTo(Asset::class, 'asset_id');
     }
 
-    public function fromLocation()
+    public function fromLocation(): BelongsTo
     {
         return $this->belongsTo(Location::class, 'from_location_id');
     }
 
-    public function toLocation()
+    public function toLocation(): BelongsTo
     {
         return $this->belongsTo(Location::class, 'to_location_id');
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'moved_by');
     }
