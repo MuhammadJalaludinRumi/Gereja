@@ -43,6 +43,13 @@ Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::get('/news/login', [NewsController::class, 'newsForLogin']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Route Auth Mobile
+Route::post('/mobile/login', [AuthController::class, 'mobileLogin'])->name('mobileLogin');
+Route::middleware('auth:sanctum')->post(
+    '/mobile/logout',
+    [AuthController::class, 'mobileLogout']
+);
+
 //
 Route::post('/users/send-otp', [ForgotPasswordController::class, 'sendOtp']);
 Route::post('/users/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);

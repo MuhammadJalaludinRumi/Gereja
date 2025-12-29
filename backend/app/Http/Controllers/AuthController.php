@@ -71,17 +71,86 @@ class AuthController extends Controller
         ], 200);
     }
 
+    public function mobileLogin(Request $request)
+    {
+        $request->validate([
+            'username' => 'required|string',
+            'password' => 'required|string',
+        ]);
+
+        $user = User::where('username', $request->username)->first();
+
+        // Username tidak ditemukan
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Username tidak ditemukan.'
+            ], 401);
+        }
+
+        $user->load(['role', 'role.organization']);
+
+        // Password salah
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Password salah.'
+            ], 401);
+        }
+
+        // Akun nonaktif
+        if ($user->is_active != 1) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Akun diblokir atau tidak aktif.'
+            ], 403);
+        }
+
+        // Update last login
+        $user->update(['last_login' => now()]);
+
+        $token = $user->createToken(
+            'mobile',
+            ['*'],
+            now()->addHours(2)
+        )->plainTextToken;
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Login berhasil.',
+            'token' => $token,
+            'user' => $user
+        ], 200);
+    }
+
     public function logout(Request $request)
     {
         if (app()->environment('production')) {
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
-        } else {
-            $request->user()?->currentAccessToken()?->delete();
         }
 
         return response()->json(['status' => true, 'message' => 'Logout berhasil.']);
+    }
+
+    public function mobileLogout(Request $request)
+    {
+
+        $user = $request->user();
+
+        if (!$user || !$user->currentAccessToken()) {
+            return response()->json([
+                'message' => 'Unauthenticated.'
+            ], 401);
+        }
+
+        $user->currentAccessToken()->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Logout berhasil.'
+        ]);
     }
 
     public function me(Request $request)
