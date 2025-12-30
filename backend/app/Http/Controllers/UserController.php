@@ -111,7 +111,7 @@ class UserController extends Controller
         ]);
     }
 
-        public function sendResetPasswordLink(Request $request)
+    public function sendResetPasswordLink(Request $request)
     {
         $request->validate(['email' => 'required|email']);
 
