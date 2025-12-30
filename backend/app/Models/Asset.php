@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Asset extends Model
 {
@@ -20,11 +22,16 @@ class Asset extends Model
         'status',
         'vendor',
         'notes',
+        'image',
         'created_by',
         'updated_by'
     ];
 
     public $timestamps = true;
+
+    /* =======================
+     * RELATIONS
+     * ======================= */
 
     public function category(): BelongsTo
     {
@@ -46,8 +53,20 @@ class Asset extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
-    public function loans()
+    public function loans(): HasMany
     {
         return $this->hasMany(AssetLoan::class, 'asset_id');
+    }
+
+    // 🔥 asset punya banyak riwayat perpindahan
+    public function movements(): HasMany
+    {
+        return $this->hasMany(AssetMovement::class, 'asset_id');
+    }
+
+    // 🔥 asset cuma boleh punya 1 disposal
+    public function disposal(): HasOne
+    {
+        return $this->hasOne(AssetDisposal::class, 'asset_id');
     }
 }
