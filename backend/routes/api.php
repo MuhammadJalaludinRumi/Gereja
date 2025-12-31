@@ -43,6 +43,8 @@ Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::get('/news/login', [NewsController::class, 'newsForLogin']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+Route::post('/user/register', [UserController::class, 'userRegister'])->name('userRegister');
+
 // Route Auth Mobile
 Route::post('/mobile/login', [AuthController::class, 'mobileLogin'])->name('mobileLogin');
 Route::middleware('auth:sanctum')->post(
