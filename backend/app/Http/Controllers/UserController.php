@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Role;
 use App\Models\User;
 use App\Models\UserAuthority;
 use Illuminate\Http\Request;
@@ -18,6 +19,36 @@ class UserController extends Controller
         // Ambil semua user beserta relasi role-nya
         $users = User::with('role')->get();
         return response()->json($users);
+    }
+
+
+    public function userRegister(Request $request)
+    {
+        $validated = $request->validate([
+            'username' => 'required|string|unique:users,username',
+            'password' => 'required|string|min:6',
+            'name' => 'required|string',
+            'email' => 'nullable|required_without:phone|email|unique:users,email',
+            'phone' => 'nullable|required_without:email|regex:/^[0-9]{10,15}$/|unique:users,phone',
+            'is_active' => 'required|boolean'
+        ]);
+
+        $role = Role::firstOrCreate(
+            ['name' => 'user'],
+            ['organization_id' => 4]
+        );
+
+        $validated['role_id'] = $role->id;
+        $validated['password'] = Hash::make($validated['password']);
+
+        $user = User::create($validated)->load('role');
+
+        UserAuthority::create([
+            'user_id' => $user->id,
+            'role_id' => $validated['role_id'],
+        ]);
+
+        return response()->json($user, 201);
     }
 
     public function store(Request $request)
