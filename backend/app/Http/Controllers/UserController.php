@@ -25,7 +25,6 @@ class UserController extends Controller
     public function userRegister(Request $request)
     {
         $validated = $request->validate([
-            'username' => 'required|string|unique:users,username',
             'password' => 'required|string|min:6',
             'name' => 'required|string',
             'email' => 'nullable|required_without:phone|email|unique:users,email',
@@ -40,6 +39,18 @@ class UserController extends Controller
 
         $validated['role_id'] = $role->id;
         $validated['password'] = Hash::make($validated['password']);
+        
+        $firstName = Str::lower(
+            preg_replace(
+                '/[^a-zA-Z0-9]/',
+                '',
+                explode(' ', trim($validated['name']))[0]
+            )
+        );
+
+        do {
+            $validated['username'] = $firstName . '_' . now()->format('YmdHis') . rand(100, 999);
+        } while (User::where('username', $validated['username'])->exists());
 
         $user = User::create($validated)->load('role');
 
