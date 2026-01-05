@@ -26,9 +26,7 @@ class AuthController extends Controller
                 'message' => 'Username tidak ditemukan.'
             ], 401);
         }
-
-        $user->load(['role', 'role.organization']);
-
+        
         // Password salah
         if (!Hash::check($request->password, $user->password)) {
             return response()->json([
@@ -36,7 +34,7 @@ class AuthController extends Controller
                 'message' => 'Password salah.'
             ], 401);
         }
-
+        
         // Akun nonaktif
         if ($user->is_active != 1) {
             return response()->json([
@@ -44,7 +42,8 @@ class AuthController extends Controller
                 'message' => 'Akun diblokir atau tidak aktif.'
             ], 403);
         }
-
+        
+        $user->load(['role', 'role.organization']);
         // Update last login
         $user->update(['last_login' => now()]);
 
@@ -74,22 +73,31 @@ class AuthController extends Controller
     public function mobileLogin(Request $request)
     {
         $request->validate([
-            'username' => 'required|string',
+            'login' => 'required|string',
             'password' => 'required|string',
         ]);
 
-        $user = User::where('username', $request->username)->first();
+        $login = trim($request->login);
+
+        if (filter_var($login, FILTER_VALIDATE_EMAIL)) {
+            $field = 'email';
+            $login = strtolower($login);
+        } elseif (preg_match('/^[0-9]{10,15}$/', $login)) {
+            $field = 'phone';
+        } else {
+            $field = 'username';
+        }
+
+        $user = User::where($field, $login)->first();
 
         // Username tidak ditemukan
         if (!$user) {
             return response()->json([
                 'status' => false,
-                'message' => 'Username tidak ditemukan.'
+                'message' => 'User tidak ditemukan.'
             ], 401);
         }
-
-        $user->load(['role', 'role.organization']);
-
+        
         // Password salah
         if (!Hash::check($request->password, $user->password)) {
             return response()->json([
@@ -97,7 +105,7 @@ class AuthController extends Controller
                 'message' => 'Password salah.'
             ], 401);
         }
-
+        
         // Akun nonaktif
         if ($user->is_active != 1) {
             return response()->json([
@@ -105,7 +113,8 @@ class AuthController extends Controller
                 'message' => 'Akun diblokir atau tidak aktif.'
             ], 403);
         }
-
+        
+        $user->load(['role', 'role.organization']);
         // Update last login
         $user->update(['last_login' => now()]);
 
