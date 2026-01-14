@@ -16,6 +16,7 @@ use App\Http\Controllers\LicenseController;
 use App\Http\Controllers\RuleController;
 use App\Http\Controllers\UserAuthorityController;
 use App\Http\Controllers\AclController;
+use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\EconomyController;
 use App\Http\Controllers\EconomyHistoryController;
 use App\Http\Controllers\MemberController;
@@ -35,6 +36,7 @@ use App\Http\Controllers\AssetMaintenanceController;
 use App\Http\Controllers\AssetMovementController;
 use App\Http\Controllers\AssetDisposalController;
 use App\Http\Controllers\AssetDocumentController;
+use App\Http\Controllers\ReflectionController;
 
 Route::apiResource('formulirs', FormulirController::class);
 
@@ -153,6 +155,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('asset-movements', AssetMovementController::class);
     Route::apiResource('asset-disposals', AssetDisposalController::class);
     Route::apiResource('asset-documents', AssetDocumentController::class);
+
+    // Announcements
+    Route::get('announcements/latest', [AnnouncementController::class, 'latest']);
+    Route::apiResource('announcements', AnnouncementController::class);
+    
+    // Reflections
+    Route::get('reflections/latest', [AnnouncementController::class, 'latest']);
+    Route::apiResource('reflections', ReflectionController::class);
 
     Route::middleware('check.acl')->group(function () {
         Route::resource('members', MemberController::class);
