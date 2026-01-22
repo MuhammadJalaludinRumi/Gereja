@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Member;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class MemberController extends Controller
@@ -81,6 +82,7 @@ class MemberController extends Controller
             'attest_date' => 'nullable|date',
             'attest_origin' => 'nullable|string',
             'family_group_int' => 'nullable|string',
+            'user_id' => 'nullable|integer|exists:users,id',
         ]);
 
         if ($request->hasFile('photo')) {
@@ -172,5 +174,130 @@ class MemberController extends Controller
         Member::findOrFail($id)->delete();
 
         return response()->json(['message' => 'deleted']);
+    }
+
+    // Mobile Member CRU
+    public function getMemberMe() {
+        $user = Auth::user();
+        $member = Member::where('user_id', $user->id)->with('city')->first();
+
+        if (!$member) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Member not found for this user'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $member
+        ]);
+    }
+
+    public function storeMemberMe(Request $request) {
+        $data = $request->validate([
+            'id_local' => 'nullable|string',
+            'name' => 'required|string',
+            'id_type' => 'nullable|string',
+            'id_number' => 'nullable|string',
+            'dob' => 'nullable|date',
+            'pob' => 'nullable|string',
+            'nationality' => 'nullable|string',
+            'ethnic' => 'nullable|string',
+            'sex' => 'nullable|string|max:1',
+            'phone' => 'nullable|string',
+            'email' => 'nullable|email',
+            'address' => 'nullable|string',
+            'city' => 'nullable|integer|exists:cities,id',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+            'photo' => 'nullable|image|max:2048',
+            'marriage' => 'nullable|string',
+            'is_deceased' => 'boolean',
+            'is_active' => 'boolean',
+            'family_id' => 'nullable|string',
+            'family_relation' => 'nullable|string',
+            'religion' => 'nullable|string',
+            'blood' => 'nullable|string',
+            'baptist_date' => 'nullable|date',
+            'baptist_place' => 'nullable|string',
+            'baptist_host_id' => 'nullable|string',
+            'baptist_host_name' => 'nullable|string',
+            'consecrate_date' => 'nullable|date',
+            'consecrate_place' => 'nullable|string',
+            'consecrate_host_id' => 'nullable|string',
+            'consecrate_host_name' => 'nullable|string',
+            'attest_date' => 'nullable|date',
+            'attest_origin' => 'nullable|string',
+            'family_group_int' => 'nullable|string',
+        ]);
+
+        $user = Auth::user();
+
+        $data['user_id'] = $user->id;
+
+        $member = Member::create($data);
+
+        return response()->json([
+            'success' => true,
+            'data' => $member
+        ], 201);
+    }
+
+    public function updateMemberMe(Request $request) {
+        $user = Auth::user();
+        $member = Member::where('user_id', $user->id)->first();
+        
+        if (!$member) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Member not found for this user'
+                ], 404);
+        }
+
+        $data = $request->validate([
+            'id_local' => 'nullable|string',
+            'name' => 'nullable|string',
+            'id_type' => 'nullable|string',
+            'id_number' => 'nullable|string',
+            'dob' => 'nullable|date',
+            'pob' => 'nullable|string',
+            'nationality' => 'nullable|string',
+            'ethnic' => 'nullable|string',
+            'sex' => 'nullable|string|max:1',
+            'phone' => 'nullable|string',
+            'email' => 'nullable|email',
+            'address' => 'nullable|string',
+            'city' => 'nullable|integer|exists:cities,id',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+            'photo' => 'nullable|image|max:2048',
+            'marriage' => 'nullable|string',
+            'is_deceased' => 'boolean',
+            'is_active' => 'boolean',
+            'family_id' => 'nullable|string',
+            'family_relation' => 'nullable|string',
+            'religion' => 'nullable|string',
+            'blood' => 'nullable|string',
+            'baptist_date' => 'nullable|date',
+            'baptist_place' => 'nullable|string',
+            'baptist_host_id' => 'nullable|string',
+            'baptist_host_name' => 'nullable|string',
+            'consecrate_date' => 'nullable|date',
+            'consecrate_place' => 'nullable|string',
+            'consecrate_host_id' => 'nullable|string',
+            'consecrate_host_name' => 'nullable|string',
+            'attest_date' => 'nullable|date',
+            'attest_origin' => 'nullable|string',
+            'family_group_int' => 'nullable|string',
+        ]);
+
+
+        $member->update($data);
+
+        return response()->json([
+            'success' => true,
+            'data' => $member
+        ]);
     }
 }
