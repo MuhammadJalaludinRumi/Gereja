@@ -49,6 +49,7 @@ class Member extends Model
         'attest_date',
         'attest_origin',
         'family_group_id',
+        'user_id',
     ];
 
     protected $casts = [
@@ -72,5 +73,10 @@ class Member extends Model
     public function city()
     {
         return $this->belongsTo(City::class, 'city');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 }

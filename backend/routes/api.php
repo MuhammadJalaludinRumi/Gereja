@@ -167,4 +167,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('check.acl')->group(function () {
         Route::resource('members', MemberController::class);
     });
+
+    // Route Member by User (Mobile)
+    Route::post('/mobile/members', [MemberController::class, 'storeMemberMe']);
+    Route::get('/mobile/members', [MemberController::class, 'getMemberMe']);
+    Route::put('/mobile/members/update', [MemberController::class, 'updateMemberMe']);
 });
