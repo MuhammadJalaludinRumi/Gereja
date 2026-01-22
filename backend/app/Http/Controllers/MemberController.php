@@ -117,7 +117,7 @@ class MemberController extends Controller
             'city' => 'nullable|integer|exists:cities,id',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
-            'photo' => 'nullable|image|max:5012',
+            'photo' => 'nullable|image|max:2048',
             'marriage' => 'nullable|string',
             'is_deceased' => 'boolean',
             'is_active' => 'boolean',
@@ -236,6 +236,11 @@ class MemberController extends Controller
 
         $data['user_id'] = $user->id;
 
+        if ($request->hasFile('photo')) {
+            $path = $request->file('photo')->store('members', 's3');
+            $data['photo'] = Storage::disk('s3')->url($path);
+        }
+
         $member = Member::create($data);
 
         return response()->json([
@@ -291,7 +296,11 @@ class MemberController extends Controller
             'attest_origin' => 'nullable|string',
             'family_group_int' => 'nullable|string',
         ]);
-
+        
+        if ($request->hasFile('photo')) {
+            $path = $request->file('photo')->store('members', 's3');
+            $data['photo'] = Storage::disk('s3')->url($path);
+        }
 
         $member->update($data);
 
