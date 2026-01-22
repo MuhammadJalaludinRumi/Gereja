@@ -236,6 +236,13 @@ class MemberController extends Controller
 
         $data['user_id'] = $user->id;
 
+        if (Member::where('user_id', $user->id)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Member already exists for this user'
+            ], 409);
+        }
+
         if ($request->hasFile('photo')) {
             $path = $request->file('photo')->store('members', 's3');
             $data['photo'] = Storage::disk('s3')->url($path);
@@ -296,7 +303,7 @@ class MemberController extends Controller
             'attest_origin' => 'nullable|string',
             'family_group_int' => 'nullable|string',
         ]);
-        
+
         if ($request->hasFile('photo')) {
             $path = $request->file('photo')->store('members', 's3');
             $data['photo'] = Storage::disk('s3')->url($path);
