@@ -296,7 +296,7 @@ class MemberController extends Controller
             'attest_origin' => 'nullable|string',
             'family_group_int' => 'nullable|string',
         ]);
-
+        
         if ($request->hasFile('photo')) {
             $path = $request->file('photo')->store('members', 's3');
             $data['photo'] = Storage::disk('s3')->url($path);
