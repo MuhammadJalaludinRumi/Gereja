@@ -18,6 +18,10 @@ class EventController extends Controller
             ->orderByDesc('id')
             ->get();
 
+        if ($events->isEmpty()) {
+            return response()->json([]);
+        }
+
         $memberIds = collect($events)->flatMap(function ($event) {
             return collect([
                 $event->service_ministry,
