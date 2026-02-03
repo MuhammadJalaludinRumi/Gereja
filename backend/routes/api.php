@@ -36,6 +36,7 @@ use App\Http\Controllers\AssetMaintenanceController;
 use App\Http\Controllers\AssetMovementController;
 use App\Http\Controllers\AssetDisposalController;
 use App\Http\Controllers\AssetDocumentController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\ReflectionController;
 
 Route::apiResource('formulirs', FormulirController::class);
@@ -166,6 +167,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::middleware('check.acl')->group(function () {
         Route::resource('members', MemberController::class);
+        Route::resource('events', EventController::class);  
     });
 
     // Route Member by User (Mobile)
