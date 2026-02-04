@@ -14,6 +14,7 @@ class Reflection extends Model
         'date_post',
         'image',
         'status',
+        'organization_id'
     ];
 
     public $timestamps = false;

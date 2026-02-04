@@ -13,6 +13,7 @@ class Announcement extends Model
         'content',
         'date_post',
         'status',
+        'organization_id',
     ];
 
     public $timestamps = false;

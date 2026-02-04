@@ -162,7 +162,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('announcements', AnnouncementController::class);
     
     // Reflections
-    Route::get('reflections/latest', [AnnouncementController::class, 'latest']);
+    Route::get('reflections/latest', [ReflectionController::class, 'latest']);
     Route::apiResource('reflections', ReflectionController::class);
 
     Route::middleware('check.acl')->group(function () {

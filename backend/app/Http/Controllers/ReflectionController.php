@@ -4,17 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Reflection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ReflectionController extends Controller
 {
     public function index()
     {
-        return response()->json(Reflection::orderBy('date_post', 'desc')->get());
+        return response()->json(Reflection::where('organization_id', Auth::user()->role->organization_id)->orderBy('date_post', 'desc')->get());
     }
 
     public function latest()
     {
-        return response()->json(Reflection::latest('date_post')->first());
+        return response()->json(Reflection::where('organization_id', Auth::user()->role->organization_id)->latest('date_post')->first());
     }
 
     public function show($id)
@@ -31,6 +32,8 @@ class ReflectionController extends Controller
             'image' => 'nullable|string|max:255',
             'status' => 'required|boolean'
         ]);
+
+        $data['organization_id'] = Auth::user()->role->organization_id; 
 
         $reflection = Reflection::create($data);
         return response()->json($reflection, 201);
