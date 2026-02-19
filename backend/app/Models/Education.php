@@ -21,6 +21,6 @@ class Education extends Model
 
     public function memberData()
     {
-        return $this->belongsTo(Member::class, 'member');
+        return $this->belongsTo(Member::class, 'member')->withTrashed();
     }
 }

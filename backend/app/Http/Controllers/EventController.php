@@ -44,6 +44,7 @@ class EventController extends Controller
             ->values();
 
         $members = Member::whereIn('id', $memberIds)
+            ->withTrashed() 
             ->select('id', 'name')
             ->get()
             ->keyBy('id');
@@ -113,6 +114,7 @@ class EventController extends Controller
             ->values();
 
         $members = Member::whereIn('id', $memberIds)
+            ->withTrashed()
             ->select('id', 'name')
             ->get()
             ->keyBy('id');

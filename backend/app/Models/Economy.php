@@ -15,6 +15,6 @@ class Economy extends Model
 
     public function member()
     {
-        return $this->belongsTo(Member::class, 'member');
+        return $this->belongsTo(Member::class, 'member')->withTrashed();        
     }
 }
