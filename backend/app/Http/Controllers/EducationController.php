@@ -9,12 +9,12 @@ class EducationController extends Controller
 {
     public function index()
     {
-        return Education::all();
+        return response()->json(Education::with('memberData')->get());
     }
 
     public function show($id)
     {
-        return Education::findOrFail($id);
+        return Education::with('memberData')->findOrFail($id);
     }
 
     public function store(Request $request)
@@ -23,8 +23,8 @@ class EducationController extends Controller
             'member' => 'required|integer',
             'level' => 'required|string',
             'institution' => 'required|string',
-            'major' => 'required|string',
-            'year_graduate' => 'required|integer'
+            'major' => 'nullable|string',
+            'year_graduate' => 'nullable|integer'
         ]);
 
         return Education::create($request->all());
@@ -38,8 +38,8 @@ class EducationController extends Controller
             'member' => 'required|integer',
             'level' => 'required|string',
             'institution' => 'required|string',
-            'major' => 'required|string',
-            'year_graduate' => 'required|integer'
+            'major' => 'nullable|string',
+            'year_graduate' => 'nullable|integer'
         ]);
 
         $education->update($request->all());
