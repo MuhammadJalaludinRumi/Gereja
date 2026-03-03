@@ -7,9 +7,29 @@ use Illuminate\Http\Request;
 
 class EducationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Education::with('memberData')->get());
+        $query = Education::with('memberData');
+
+        if ($request->has('search') && $request->search !== '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('memberData', function ($mq) use ($search) {
+                    $mq->where('name', 'like', "%{$search}%");
+                })
+                ->orWhere('level', 'like', "%$search%")
+                ->orWhere('institution', 'like', "%$search%")
+                ->orWhere('major', 'like', "%$search%")
+                ->orWhere('year_graduate', 'like', "%$search%");
+                });
+        } 
+
+        $per_page = (int) $request->input('per_page', 10);
+
+        $educations = $query
+            ->orderBy('id', 'asc')
+            ->paginate($per_page);
+        return response()->json($educations);
     }
 
     public function show($id)
