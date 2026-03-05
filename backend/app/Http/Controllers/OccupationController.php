@@ -7,10 +7,22 @@ use Illuminate\Http\Request;
 
 class OccupationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Fetch semua data occupation + member
-        $occupations = Occupation::with('memberData')->get();
+        $query = Occupation::with('memberData');
+
+        if ($request->has('search') && $request->search !== '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('memberData', function ($mq) use ($search) {
+                    $mq->where('name', 'like', "%{$search}%");
+                })
+                ->orWhere('company', 'like', "%$search%")
+                ->orWhere('position', 'like', "%$search%");
+                });
+        }            
+
+        $occupations = $query->paginate(10);
         return response()->json($occupations);
     }
 

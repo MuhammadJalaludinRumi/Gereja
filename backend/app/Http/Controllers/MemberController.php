@@ -12,6 +12,14 @@ class MemberController extends Controller
     public function index(Request $request)
     {
         $query = Member::with('city');
+        
+        if ($request->has('search') && $request->search !== '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                ->orWhere('id_local', 'like', "%$search%");
+                });
+        } 
 
         // FILTER BY FAMILY ID (KK)
         if ($request->has('family_id') && $request->family_id !== '') {
@@ -24,12 +32,45 @@ class MemberController extends Controller
             ]);
         }
 
-        // default paginate
+        $per_page = (int) $request->input('per_page', 10);
+
         $members = $query
-            ->orderBy('name', 'asc')
-            ->paginate(50);
+            ->orderBy('id', 'asc')
+            ->paginate($per_page);
 
         return response()->json($members);
+    }
+    
+    public function select(Request $request)
+    {
+        $id     = $request->integer('id');
+        $search = trim($request->query('search', ''));
+
+        $query = Member::query()->select(['id', 'name']);
+
+        if ($search && strlen($search) >= 3) {
+            $members = $query
+                ->where('name', 'like', "%{$search}%")
+                ->orderBy('name', 'asc')
+                ->limit(10)
+                ->get();
+        }
+        elseif ($id) {
+            $members = $query
+                ->where('id', $id)
+                ->limit(1)
+                ->get();
+        }
+        else {
+            return response()->json([]);
+        }
+
+        return response()->json(
+            $members->map(fn ($member) => [
+                'value'    => $member->id,
+                'label' => $member->name,
+            ])
+        );
     }
 
     // opsional, boleh dipake atau dihapus karena sudah includ di index()
@@ -41,7 +82,7 @@ class MemberController extends Controller
     public function show($id)
     {
         return response()->json(
-            Member::with('city')->findOrFail($id)
+            Member::with('city.provinceRelation')->findOrFail($id)
         );
     }
 
@@ -92,7 +133,9 @@ class MemberController extends Controller
 
         $member = Member::create($data);
 
-        $member->load('city');
+        if (!empty($data['city'])){
+            $member->load('city');
+        }
 
         return response()->json($member, 201);
     }

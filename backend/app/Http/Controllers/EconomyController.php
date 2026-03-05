@@ -8,9 +8,24 @@ use Illuminate\Http\Request;
 
 class EconomyController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $economies = Economy::with('member')->get();
+        $query = Economy::with('member');
+
+        if ($request->has('search') && $request->search !== '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('member', function ($mq) use ($search) {
+                    $mq->where('name', 'like', "%{$search}%");
+                })
+                ->orWhere('class', 'like', "%$search%");
+                });
+        }
+
+        $per_page = (int) $request->input('per_page', 10);
+
+        $economies = $query->paginate($per_page);
+
         return response()->json($economies);
     }
 

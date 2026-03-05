@@ -7,13 +7,26 @@ use Illuminate\Http\Request;
 
 class MarriageController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Marriage::with([
-            'brideMember',
-            'groomMember',
-            'priestMember'
-        ])->get();
+        $query = Marriage::query();
+
+        if ($request->has('search') && $request->search !== '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('bride_name', 'like', "%$search%")
+                ->orWhere('groom_name', 'like', "%$search%")
+                ->orWhere('venue', 'like', "%$search%");
+                });
+        } 
+
+        $per_page = (int) $request->input('per_page', 10);
+
+        $marriages = $query
+            ->orderBy('id', 'asc')
+            ->paginate($per_page);
+
+        return response()->json($marriages);
     }
 
     public function store(Request $request)
