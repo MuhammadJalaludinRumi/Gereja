@@ -164,12 +164,15 @@ Route::middleware('auth:sanctum')->group(function () {
     // Reflections
     Route::get('reflections/latest', [ReflectionController::class, 'latest']);
     Route::apiResource('reflections', ReflectionController::class);
-
+    
     Route::middleware('check.acl')->group(function () {
+        // Route Dropdown Member Select
+        Route::get('members/select', [MemberController::class, 'select']);
         Route::resource('members', MemberController::class);
+        
         Route::resource('events', EventController::class);  
     });
-
+    
     // Route Member by User (Mobile)
     Route::post('/mobile/members', [MemberController::class, 'storeMemberMe']);
     Route::get('/mobile/members', [MemberController::class, 'getMemberMe']);

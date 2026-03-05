@@ -40,6 +40,38 @@ class MemberController extends Controller
 
         return response()->json($members);
     }
+    
+    public function select(Request $request)
+    {
+        $id     = $request->integer('id');
+        $search = trim($request->query('search', ''));
+
+        $query = Member::query()->select(['id', 'name']);
+
+        if ($search && strlen($search) >= 3) {
+            $members = $query
+                ->where('name', 'like', "%{$search}%")
+                ->orderBy('name', 'asc')
+                ->limit(10)
+                ->get();
+        }
+        elseif ($id) {
+            $members = $query
+                ->where('id', $id)
+                ->limit(1)
+                ->get();
+        }
+        else {
+            return response()->json([]);
+        }
+
+        return response()->json(
+            $members->map(fn ($member) => [
+                'value'    => $member->id,
+                'label' => $member->name,
+            ])
+        );
+    }
 
     // opsional, boleh dipake atau dihapus karena sudah includ di index()
     public function byKK($kk)
