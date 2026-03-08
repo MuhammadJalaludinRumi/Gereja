@@ -11,82 +11,100 @@ use Illuminate\Validation\Rule;
 
 class EventController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        /** @var \Illuminate\Support\Collection<int, \App\Models\Event> $events */
-        $events = Event::where('organization_id', Auth::user()->role->organization_id)
-            ->orderByDesc('id')
-            ->get();
+        $query = Event::where('organization_id', Auth::user()->role->organization_id);
 
-        if ($events->isEmpty()) {
-            return response()->json([]);
+        // Search
+        if ($request->has('search') && $request->search !== '') {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('service_type', 'like', "%$search%")
+                ->orWhere('scripture_reading', 'like', "%$search%")
+                ->orWhere('sermon_text', 'like', "%$search%")
+                ->orWhere('sermon_theme', 'like', "%$search%");
+            });
         }
 
-        $memberIds = collect($events)->flatMap(function ($event) {
+        $per_page = (int) $request->input('per_page', 10);
+
+        $events = $query
+            ->orderByDesc('id')
+            ->paginate($per_page);
+
+        if ($events->isEmpty()) {
+            return response()->json($events);
+        }
+
+        $collection = collect($events->items());
+
+        // Ambil semua member id
+        $memberIds = $collection->flatMap(function ($event) {
             return collect([
                 $event->service_ministry,
                 $event->coordinator,
                 $event->liturgist,
                 $event->pf_assistant,
             ])
-                ->merge($event->musician ?? [])
-                ->merge($event->worship_leader ?? [])
-                ->merge($event->offering_officer ?? [])
-                ->merge($event->choir ?? []);
+            ->merge($event->musician ?? [])
+            ->merge($event->worship_leader ?? [])
+            ->merge($event->offering_officer ?? [])
+            ->merge($event->choir ?? []);
         })
-            ->filter()
-            ->unique()
-            ->values();
+        ->filter()
+        ->unique()
+        ->values();
 
-        $organizationIds = collect($events)
-            ->pluck('organization_id')
-            ->unique()
-            ->values();
-
+        // Member lookup
         $members = Member::whereIn('id', $memberIds)
-            ->withTrashed() 
+            ->withTrashed()
             ->select('id', 'name')
             ->get()
             ->keyBy('id');
 
-        $organization = Organization::where('id', $organizationIds)
-            ->select('id', 'name')
-            ->first();
+        // Organization lookup
+        $organization = Organization::select('id', 'name')
+            ->find(Auth::user()->role->organization_id);
 
-        $events = $events->map(function ($event) use ($members, $organization) {
-            return [
-                'id' => $event->id,
-                'service_type' => $event->service_type,
-                'service_date' => $event->service_date,
-                'service_time' => $event->service_time,
-                'service_ministry' => $members[$event->service_ministry],
-                'organization' => $organization,
+        // Transform data
+        $events->setCollection(
+            $collection->map(function ($event) use ($members, $organization) {
+                return [
+                    'id' => $event->id,
+                    'service_type' => $event->service_type,
+                    'service_date' => $event->service_date,
+                    'service_time' => $event->service_time,
 
-                'scripture_reading' => $event->scripture_reading,
-                'sermon_text' => $event->sermon_text,
-                'sermon_theme' => $event->sermon_theme,
+                    'service_ministry' => $members[$event->service_ministry] ?? null,
+                    'organization' => $organization,
 
-                'coordinator' => $members[$event->coordinator] ?? null,
-                'liturgist' => $members[$event->liturgist] ?? null,
-                'pf_assistant' => $members[$event->pf_assistant] ?? null,
+                    'scripture_reading' => $event->scripture_reading,
+                    'sermon_text' => $event->sermon_text,
+                    'sermon_theme' => $event->sermon_theme,
 
-                'musician' => collect($event->musician)->map(fn($id) => $members[$id] ?? null)->filter()->values(),
-                'worship_leader' => collect($event->worship_leader)->map(fn($id) => $members[$id] ?? null)->filter()->values(),
-                'offering_officer' => collect($event->offering_officer)->map(fn($id) => $members[$id] ?? null)->filter()->values(),
-                'choir' => collect($event->choir)->map(fn($id) => $members[$id] ?? null)->filter()->values(),
+                    'coordinator' => $members[$event->coordinator] ?? null,
+                    'liturgist' => $members[$event->liturgist] ?? null,
+                    'pf_assistant' => $members[$event->pf_assistant] ?? null,
 
-                'male_attendance' => $event->male_attendance,
-                'female_attendance' => $event->female_attendance,
-                'total_attendance' => $event->total_attendance,
+                    'musician' => collect($event->musician)->map(fn ($id) => $members[$id] ?? null)->filter()->values(),
+                    'worship_leader' => collect($event->worship_leader)->map(fn ($id) => $members[$id] ?? null)->filter()->values(),
+                    'offering_officer' => collect($event->offering_officer)->map(fn ($id) => $members[$id] ?? null)->filter()->values(),
+                    'choir' => collect($event->choir)->map(fn ($id) => $members[$id] ?? null)->filter()->values(),
 
-                'red_envelope' => $event->red_envelope,
-                'blue_envelope' => $event->blue_envelope,
-                'other_envelope' => $event->other_envelope,
-                'total_envelope' => $event->total_envelope,
+                    'male_attendance' => $event->male_attendance,
+                    'female_attendance' => $event->female_attendance,
+                    'total_attendance' => $event->total_attendance,
 
-                'note' => $event->note,
-            ];
-        });
+                    'red_envelope' => $event->red_envelope,
+                    'blue_envelope' => $event->blue_envelope,
+                    'other_envelope' => $event->other_envelope,
+                    'total_envelope' => $event->total_envelope,
+
+                    'note' => $event->note,
+                ];
+            })
+        );
 
         return response()->json($events);
     }
