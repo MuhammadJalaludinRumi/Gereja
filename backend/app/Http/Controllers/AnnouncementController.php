@@ -8,9 +8,24 @@ use Illuminate\Support\Facades\Auth;
 
 class AnnouncementController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Announcement::where('organization_id', Auth::user()->role->organization_id)->orderBy('date_post', 'desc')->get());
+        $query = Announcement::where('organization_id', Auth::user()->role->organization_id);
+
+        if ($request->has('search') && $request->search !== '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%$search%");
+                });
+        }
+
+        $per_page = (int) $request->input('per_page', 10);
+
+        $announcements = $query
+            ->orderBy('date_post', 'desc')
+            ->paginate($per_page);
+
+        return response()->json($announcements);
     }
 
     public function latest()
