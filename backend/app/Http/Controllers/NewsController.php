@@ -7,9 +7,24 @@ use Illuminate\Http\Request;
 
 class NewsController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(News::orderBy('date_post', 'desc')->get());
+        $query = News::query();
+
+        if ($request->has('search') && $request->search !== '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%$search%");
+                });
+        }
+
+        $per_page = (int) $request->input('per_page', 10);
+
+        $news = $query
+            ->orderBy('date_post', 'desc')
+            ->paginate($per_page); 
+
+        return response()->json($news);
     }
 
     public function show($id)
