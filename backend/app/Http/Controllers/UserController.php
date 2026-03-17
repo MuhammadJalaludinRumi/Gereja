@@ -10,14 +10,26 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Password;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Ambil semua user beserta relasi role-nya
-        $users = User::with('role')->get();
+        $query = User::with('role');
+
+        if ($request->has('search') && $request->search !== '') {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                ->orWhere('username', 'like', "%$search%")
+                ;
+            });
+        }
+
+        $per_page = (int) $request->input('per_page', 10);
+
+        $users = $query->paginate($per_page);
+
         return response()->json($users);
     }
 
@@ -39,7 +51,7 @@ class UserController extends Controller
 
         $validated['role_id'] = $role->id;
         $validated['password'] = Hash::make($validated['password']);
-        
+
         $firstName = Str::lower(
             preg_replace(
                 '/[^a-zA-Z0-9]/',
