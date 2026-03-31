@@ -7,9 +7,18 @@ use Illuminate\Http\Request;
 
 class ProvinceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Province::all();
+        $query = Province::query();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%$search%");
+        }
+
+        $provinces = $query->orderBy('name')->get();
+
+        return response()->json($provinces);
     }
 
     public function store(Request $request)

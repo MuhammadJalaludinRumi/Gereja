@@ -7,10 +7,26 @@ use Illuminate\Http\Request;
 
 class InvoiceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $invoice = Invoice::with('organization')->get();
-        return response()->json($invoice);
+        $query = Invoice::with('organization');
+
+        if ($request->has('search') && $request->search !== '') {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('total', 'like', "%$search%")
+                ->orWhereHas('organization', function ($q2) use ($search) {
+                    $q2->where('name', 'like', "%$search%");
+                });
+            });
+        }
+
+        $per_page = (int) $request->input('per_page', 10);
+
+        $invoices = $query->paginate($per_page);
+
+        return response()->json($invoices);
     }
 
     public function show($id)
