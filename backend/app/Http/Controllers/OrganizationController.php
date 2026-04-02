@@ -8,9 +8,26 @@ use Illuminate\Support\Facades\Storage;
 
 class OrganizationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $organizations = Organization::with('city')->get();
+        $query = Organization::with('city');
+
+        if ($request->has('search') && $request->search !== '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                ->orWhere('email', 'like', "%$search%")
+                ->orWhere('website', 'like', "%$search%")
+                ->orWhere('address', 'like', "%$search%")
+                ->orWhere('website', 'like', "%$search%")
+                ->orWhereHas('city', function($cq) use ($search) {
+                    $cq->where('name', 'like', "%$search%");
+                });
+            });
+        }
+
+        $organizations = $query->get();
+
         return response()->json($organizations);
     }
 
@@ -18,18 +35,18 @@ class OrganizationController extends Controller
     {
         $data = $request->validate([
             'name'         => 'required|string|max:255',
-            'abbreviation' => 'nullable|string|max:50',
-            'address'      => 'nullable|string|max:255',
-            'city'         => 'nullable|integer|exists:cities,id', // ✅ FIX: integer, bukan string
-            'latitude'     => 'nullable|numeric',
-            'longitude'    => 'nullable|numeric',
-            'phone'        => 'nullable|string|max:50',
-            'email'        => 'nullable|email|max:255',
-            'group_id'     => 'nullable|integer|exists:groups,id', // ✅ tambah exists validation
-            'website'      => 'nullable|string|max:255',
-            'logo'         => 'nullable|file|image|max:2048',
-            'founded'      => 'nullable|date',
-            'legal'        => 'nullable|string|max:100',
+            'abbreviation' => 'required|string|max:50',
+            'address'      => 'required|string|max:255',
+            'city'         => 'required|integer|exists:cities,id', // ✅ FIX: integer, bukan string
+            'latitude'     => 'required|numeric',
+            'longitude'    => 'required|numeric',
+            'phone'        => 'required|string|max:50',
+            'email'        => 'required|email|max:255',
+            'group_id'     => 'required|integer|exists:groups,id', // ✅ tambah exists validation
+            'website'      => 'required|string|max:255',
+            'logo'         => 'required|file|image|max:2048',
+            'founded'      => 'required|date',
+            'legal'        => 'required|string|max:100',
         ]);
 
         // Upload ke S3 kalau ada file logo
@@ -50,7 +67,7 @@ class OrganizationController extends Controller
     public function show($id)
     {
         $org = Organization::with('city')->findOrFail($id);
-        return response()->json(['data' => $org]);
+        return response()->json($org);
     }
 
     public function update(Request $request, $id)
@@ -58,19 +75,19 @@ class OrganizationController extends Controller
         $org = Organization::findOrFail($id);
 
         $data = $request->validate([
-            'name'         => 'required|string|max:255',
-            'abbreviation' => 'nullable|string|max:50',
-            'address'      => 'nullable|string|max:255',
-            'city'         => 'nullable|integer|exists:cities,id',
-            'latitude'     => 'nullable|numeric',
-            'longitude'    => 'nullable|numeric',
-            'phone'        => 'nullable|string|max:50',
-            'email'        => 'nullable|email|max:255',
-            'group_id'     => 'nullable|integer|exists:groups,id',
-            'website'      => 'nullable|string|max:255',
-            'logo'         => 'nullable|file|image|max:2048',
-            'founded'      => 'nullable|date',
-            'legal'        => 'nullable|string|max:100',
+            'name'         => 'sometimes|string|max:255',
+            'abbreviation' => 'sometimes|string|max:50',
+            'address'      => 'sometimes|string|max:255',
+            'city'         => 'sometimes|integer|exists:cities,id',
+            'latitude'     => 'sometimes|numeric',
+            'longitude'    => 'sometimes|numeric',
+            'phone'        => 'sometimes|string|max:50',
+            'email'        => 'sometimes|email|max:255',
+            'group_id'     => 'sometimes|integer|exists:groups,id',
+            'website'      => 'sometimes|string|max:255',
+            'logo'         => 'sometimes|file|image|max:2048',
+            'founded'      => 'sometimes|date',
+            'legal'        => 'sometimes|string|max:100',
         ]);
 
         // Upload baru kalau ada logo baru

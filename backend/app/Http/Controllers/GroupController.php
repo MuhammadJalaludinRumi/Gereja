@@ -12,7 +12,6 @@ class GroupController extends Controller
     {
         $group = Group::with('city')->get();
 
-        // buat debug
         return response()->json($group);
     }
 
@@ -20,14 +19,14 @@ class GroupController extends Controller
     {
         $data = $request->validate([
             'name'    => 'required|string|max:255',
-            'address' => 'nullable|string',
-            'city'    => 'nullable|string',
-            'phone'   => 'nullable|string',
-            'email'   => 'nullable|email',
-            'website' => 'nullable|string',
-            'logo'    => 'nullable|file|image|max:2048',
-            'founded' => 'nullable|date',
-            'legal'   => 'nullable|string',
+            'address' => 'required|string',
+            'city'    => 'required|integer|exists:cities,id',
+            'phone'   => 'required|string',
+            'email'   => 'required|email',
+            'website' => 'required|string',
+            'logo'    => 'required|file|image|max:2048',
+            'founded' => 'required|date',
+            'legal'   => 'required|string',
         ]);
 
         if ($request->hasFile('logo')) {
@@ -42,21 +41,22 @@ class GroupController extends Controller
 
     public function show(Group $group)
     {
+        $group->load('city');
         return response()->json($group);
     }
 
     public function update(Request $request, Group $group)
     {
         $data = $request->validate([
-            'name'    => 'required|string|max:255',
-            'address' => 'nullable|string',
-            'city'    => 'nullable|string',
-            'phone'   => 'nullable|string',
-            'email'   => 'nullable|email',
-            'website' => 'nullable|string',
-            'logo'    => 'nullable|file|image|max:2048',
-            'founded' => 'nullable|date',
-            'legal'   => 'nullable|string',
+            'name'    => 'sometimes|string|max:255',
+            'address' => 'sometimes|string',
+            'city'    => 'sometimes|integer|exists:cities,id',
+            'phone'   => 'sometimes|string',
+            'email'   => 'sometimes|email',
+            'website' => 'sometimes|string',
+            'logo'    => 'sometimes|file|image|max:2048',
+            'founded' => 'sometimes|date',
+            'legal'   => 'sometimes|string',
         ]);
 
         if ($request->hasFile('logo')) {
