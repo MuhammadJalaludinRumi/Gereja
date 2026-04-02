@@ -8,9 +8,20 @@ use Illuminate\Http\Request;
 class AclController extends Controller
 {
     // GET /api/acls
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Acl::all());
+        $query = Acl::query();
+
+        if ($request->has('search') && $request->search !== '') {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%$search%");
+            });
+        }
+
+        $acls = $query->get();
+
+        return response()->json($acls);
     }
 
     // GET /api/acls/{id}

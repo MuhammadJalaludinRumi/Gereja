@@ -7,14 +7,27 @@ use Illuminate\Http\Request;
 
 class RuleController extends Controller
 {
-    /**
-     * GET /api/rules
-     * Menampilkan semua rule dengan relasi role dan acl
-     */
-    public function index()
+    public function index(Request $request)
     {
-        $rules = Rule::with(['role', 'acl'])->get();
-        return response()->json($rules);
+        $query = Rule::with([
+            'role:id,name',
+            'acl:id,name'
+        ]);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->orWhereHas('role', fn ($r) => 
+                    $r->where('name', 'like', "%$search%")
+                )
+                ->orWhereHas('acl', fn ($a) => 
+                    $a->where('name', 'like', "%$search%")
+                );
+            });
+        }
+
+        return response()->json($query->get());
     }
 
     /**

@@ -7,10 +7,25 @@ use Illuminate\Http\Request;
 
 class RoleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $role = Role::with('organization')->get();
-        return response()->json($role);
+        $query = Role::with('organization');
+
+        if ($request->has('search') && $request->search !== '') {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+
+                ->orWhereHas('organization', function ($q2) use ($search) {
+                    $q2->where('name', 'like', "%$search%");
+                });
+            });
+        }
+
+        $roles = $query->get();
+
+        return response()->json($roles);
     }
 
     public function show($id)
