@@ -83,6 +83,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user/profile', [UserController::class, 'updateProfile']);
 
     //Route Users
+    Route::get('/users/select', [UserController::class, 'select']);
     Route::apiResource('users', UserController::class);
 
     //Route Roles

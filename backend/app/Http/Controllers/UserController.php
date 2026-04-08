@@ -224,4 +224,30 @@ class UserController extends Controller
 
         return response()->json(['message' => 'Password berhasil diubah']);
     }
+
+    public function select(Request $request)
+    {
+        $search = $request->input('search');
+        $id = $request->input('id');
+
+        $query = User::query();
+        if ($id) {
+            $query->where('id', $id);
+        } 
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query->get(['id', 'name']);
+
+        return response()->json($users->map(function ($user) {
+            return [
+                'value' => $user->id,
+                'label' => $user->name
+            ];
+        }));
+    }
 }
