@@ -8,9 +8,23 @@ use Illuminate\Http\Request;
 
 class UserAuthorityController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $authorities = UserAuthority::with(['user', 'role'])->get();
+        $query = UserAuthority::with(['user', 'role']);
+
+        if ($request->has('search') && $request->search !== '') {
+            $search = $request->search;
+            $query = $query->where(function ($q) use ($search) {
+                $q->whereHas('user', function ($q2) use ($search) {
+                    $q2->where('name', 'like', "%$search%");
+                })->orWhereHas('role', function ($q3) use ($search) {
+                    $q3->where('name', 'like', "%$search%");
+                });
+            });
+        }
+
+        $authorities = $query->get(); 
+
         return response()->json($authorities);
     }
 
