@@ -7,10 +7,27 @@ use Illuminate\Http\Request;
 
 class OrganizationLicenseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $data = OrganizationLicense::with(['organization', 'license'])->get();
-        return response()->json($data);
+        $query = OrganizationLicense::with(['organization', 'license']);
+
+        if ($request->has('search') && $request->search !== '') {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+
+                ->orWhereHas('organization', function ($q2) use ($search) {
+                    $q2->where('name', 'like', "%$search%");
+                });
+            });
+        }
+
+        $per_page = (int) $request->input('per_page', 10);
+
+        $organizationLicenses = $query->paginate($per_page);
+
+        return response()->json($organizationLicenses);
     }
 
     public function show($id)

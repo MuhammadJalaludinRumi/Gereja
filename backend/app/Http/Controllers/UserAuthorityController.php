@@ -23,7 +23,9 @@ class UserAuthorityController extends Controller
             });
         }
 
-        $authorities = $query->get(); 
+        $per_page = (int) $request->input('per_page', 10);
+
+        $authorities = $query->paginate($per_page);
 
         return response()->json($authorities);
     }

@@ -7,9 +7,18 @@ use Illuminate\Http\Request;
 
 class LicenseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(License::all());
+        $query = License::query();
+
+        if ($request->has('search') && $request->search !== '') {
+            $search = $request->search;
+            $query->where('name', 'like', "%$search%");
+        }
+        
+        $licenses = $query->get();
+
+        return response()->json($licenses);
     }
 
     public function store(Request $request)
